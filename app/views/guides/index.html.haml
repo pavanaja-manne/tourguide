@@ -1,0 +1,21 @@
+#page-header  
+  %h2 Create Share and Discuss Awesome TravelGuides
+  %h3 Taking a quick day trip or venturing into unfamiliar territory? Whatever you are we tell you how to make the best of it.
+#info{:style => 'position:relative;top:84px'}
+  Guides Just Added
+  =select_tag "browse_by",options_for_select(@browse_by),{:class=>'selectBox',:align=>'right'}
+  =select_tag "chars",options_for_select(@characteristics),{:class => 'selectBox'}
+  =image_submit_tag "grid.png", :onclick => '$(".content_field").css("width","20%");'
+  =image_submit_tag "lined.png", :onclick => '$(".content_field").css("width","100%");'
+#content-div    
+  - @guides.each do |guide|
+    %fieldset.content_field{:style=>'width:20%;border:1px solid #FCFCFC;float:left;'}
+      %ul
+        %li= guide.title
+        %li= guide.tag_line
+        %li= guide.city
+        %li= guide.stress_factor
+        %li= guide.pacing
+        %li= guide.category
+        %li= link_to 'Add to New Guide', new_guide_path
+#new_content-div

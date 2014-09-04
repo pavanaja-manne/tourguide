@@ -1,0 +1,37 @@
+= form_for(@guide) do |f|
+  - if @guide.errors.any?
+    #error_explanation
+      %h2
+        = pluralize(@guide.errors.count, "error")
+        prohibited this guide from being saved:
+      %ul
+        - @guide.errors.full_messages.each do |msg|
+          %li= msg
+  .field
+    = f.label :title
+    %br/
+    = f.text_field :title, :place_holder => "Title"
+  .field
+    = f.label :tag_line
+    %br/
+    = f.text_field :tag_line
+  .field
+    = f.label :city
+    %br/
+    = f.text_field :city
+  .field
+    = f.label :stress_factor
+    %br/
+    = f.select :stress_factor, @stress_factor,{},:class=>'selectBox'
+  .field
+    = f.label :pacing
+    %br/
+    = f.select :pacing, @pacing, {},:class=>'selectBox'
+  .field
+    = f.label :category
+    %br/
+    = f.select :category, @category, {},:class=>'selectBox'
+  .actions
+    - val1 = @user.id
+    = f.hidden_field :user_id,:value => val1
+    = f.submit

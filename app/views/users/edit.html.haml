@@ -1,0 +1,68 @@
+#page-header
+  #notice{:style => 'color:red;'}    
+    %b
+      = notice
+  %h2 Account Settings
+  %h3 --- Need To Be Added ----
+
+= form_for(@user) do |f|
+  - if @user.errors.any?
+    #error_explanation
+      %h2
+        = pluralize(@user.errors.count, "error")
+        prohibited this user from being saved:
+      %ul
+        - @user.errors.full_messages.each do |msg|
+          %li= msg
+  %table{:style=>'padding:100px 0 0 562px;'}
+    %tr
+      %td
+        = f.label :picture
+      %td
+        =image_tag(@user.img,:size => "80x80")
+        =link_to "Delete Picture"
+    %tr
+      %td
+        = f.label :name
+      %td
+        - name = @user.name
+        = f.text_field :name,:value => name
+        So Your friends can find you
+    %tr
+      %td
+        = f.label :email
+      %td
+        = f.text_field :email, :value => @user.email
+    %tr
+      %td
+        = f.label :location
+      %td
+        = f.text_field :location, :value => @user.location
+    %tr
+      %td
+        = f.label :biography
+      %td
+        = f.text_area :biography, :columns => '30', :rows => '4', :value => @user.biography
+    %tr
+      %td
+        = f.label :website
+      %td
+        = f.text_field :website, :value => @user.website
+    %tr
+      %td
+      %td
+        = f.check_box :follow, :value => @user.follow
+        Email When Someone follows.
+    %tr
+      %td
+      %td        
+        = f.check_box :comment, :value => @user.comment
+        Email When Someone comments on a guide you've Added.
+    %tr
+      %td
+      %td
+        =image_tag "twitter_connect.png"
+    %tr
+      %td
+      %td
+        = f.submit

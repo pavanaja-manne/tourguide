@@ -1,0 +1,27 @@
+#page-header
+  = image_tag(@user.img, :size => "100x100")  
+%div{:style=>'position:relative;float:left;padding:0 0 0 762px;text-align:left '}
+  %span
+    = @user.name
+  %br
+  %span
+    = @user.location
+  %br
+  %span
+    = @user.biography
+  %br
+  %span
+    =link_to "Edit Profile", edit_user_path(@user), :style => 'color:grey;'
+%div{:class => 'clear'}
+  %br\
+#content-div{:width=>'100%'}
+  - @guides.each do |guide|
+    %fieldset{:style=>'width:200px;border:1px solid #FCFCFC;float:left;'}
+      %ul
+        %li= guide.title
+        %li= guide.tag_line
+        %li= guide.city
+        %li= guide.stress_factor
+        %li= guide.pacing
+        %li= guide.category        
+   

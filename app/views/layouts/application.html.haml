@@ -1,0 +1,48 @@
+%html
+  %head
+    %title Do In a Day
+    = stylesheet_link_tag    "application", :media => "all"
+    = javascript_include_tag "application","http://maps.google.com/maps?file=api&amp;v=2&amp;key=AIzaSyARDa-zSGZaZpd_U05Qxu4tkqRHJg6Vieg"
+    = csrf_meta_tags
+  %body
+    #header-div 
+      = submit_tag "Do In a Day",:onclick => 'window.location.href = "/"', :style=>'float:left;background-color:#230C0C;font-size:22px;margin:20px 0 0 0;'
+      = link_to "Create", new_guide_path      
+      = submit_tag "Browse", :id=>'browse', :style => 'background-color:#230C0C;'
+      = text_field_tag "key_word",'', :class=>'search_field'
+      #login_div{:style => "position:fixed;top:0px;right:10px;font-size:20px;color:#4A8CEF;"}
+        - if session[:user_id].nil?
+          = link_to "Log in with Facebook", "/auth/facebook"
+        - else
+          - @user = User.find_by_uid(session[:user_id])
+          = image_submit_tag @user.img, :onclick=>'window.location = "/users/profile"'
+          = link_to @user.name, "/users/profile"
+          = link_to "Logout", "/sessions/destroy"
+    #notice
+      = notice
+    = yield
+
+:javascript
+  $('document').ready(function(){	
+  	$('#browse').click(function(){  
+  		$.ajax({
+                               // type : "GET",
+                                datatype: 'html',
+                                url: 'guides/search?keyword='+$("#key_word").val(),
+
+                               /* success: function(data) {
+                                $('#content-div').empty();
+                                alert(data);
+                                console.log("Im here");
+                                console.log(data);
+  								jQuery('#content-div').html(data);
+                                },
+                                error : function() {
+                                         alert("Sorry, The requested property could not be found.");
+                                }*/
+                        }).done(function( html ) {
+                            $("#content-div").html("");
+                            $("#content-div").append(html);
+                          });
+  					});
+  });

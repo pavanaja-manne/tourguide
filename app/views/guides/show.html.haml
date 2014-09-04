@@ -1,0 +1,97 @@
+#map{:style =>"width:300px;height:300px;padding:0 0 0 500px"}  
+= form_for(@location) do |f|
+  %table{:style=>'padding:100px 0 0 562px;'}
+    %tr
+      %td
+        = f.label :name
+      %td
+        =f.text_field :name
+    %tr
+      %td
+        = f.label :tags
+      %td
+        = f.text_field :tag
+    %tr
+      %td
+        = f.label "Why You Like this"
+      %td
+        = f.text_area :about, :columns => '30', :rows => '4'
+    %tr
+      %td
+        = f.label "longitude"
+      %td
+        = f.text_field :long, :value => @user.location
+    %tr
+      %td
+        = f.label "lattitude"
+      %td
+        = f.text_field :lat
+    %tr
+      %td
+      %td       
+        %input{:type => 'button', :value => 'Add Location', :id => 'add_location'}
+
+
+:javascript
+  $('document').ready(function(){
+    init();
+  	$("#add_location").click(function(){
+  				alert($("#location_name").val());
+  				$.ajax({
+                               // type : "GET",
+                                datatype: 'html',
+                                url: '/guides/location_create?name='+$("#location_name").val()+'&tag='+$("#location_tags").val()+'&about='+$("#location_about").val()+'&long='+$("#location_long").val()+'&lat='+$("#location_lat").val()+"&guide_id=#{@guide.id}",
+                               /* success: function(data) {
+                                $('#content-div').empty();
+                                alert(data);
+                                console.log("Im here");
+                                console.log(data);
+  								jQuery('#content-div').html(data);
+                                },
+                                error : function() {
+                                         alert("Sorry, The requested property could not be found.");
+                                }*/
+                        }).done(function( html ) {
+                            $("#content-div").html("");
+                            $("#content-div").append(html);
+                          });
+  					});
+  					});
+  	
+
+  var centerLatitude = 37.4419; 
+  var centerLongitude = -122.1419; var startZoom = 12;
+  var map;  
+  function init() { if (GBrowserIsCompatible()) {
+    map = new GMap2(document.getElementById("map")); 
+    map.addControl(new GSmallMapControl()); 
+    map.addControl(new GMapTypeControl());  
+    map.setCenter(new GLatLng(centerLatitude, centerLongitude), startZoom);
+    //	allow the user to click the map to create a marker 
+    GEvent.addListener(map, "click", function(overlay, latlng) { 
+     	//create an HTML DOM form element 
+    	//var inputForm = document.createElement("form"); 
+    	//inputForm.setAttribute("action",""); 
+    	//inputForm.onsubmit = function() {createMarker(); return false;};
+    	//retrieve the longitude and lattitude of the click point 
+  		var lng = latlng.lng(); 
+  		var lat = latlng.lat();
+        document.getElementById('location_long').value = lng;
+  		document.getElementById('location_lat').value = lng;   		
+    	/*inputForm.innerHTML = '<fieldset style="width:150px;">' + 
+                              '<legend>New Marker</legend>' + 
+                               '<label for="found">Found</label>'   
+                               +'<input type="text" id="found" name="m[found]" style="width:100%;"/>' + 
+                               '<label for="left">Left</label>'+ 
+                               '<input type="text" id="left" name="m[left]" style="width:100%;"/>' + 
+                               '<input type="submit" value="Save"/>' + 
+                               '<input type="hidden" id="longitude" name="m[lng]" value="'+ lng +'"/>' + 
+                               '<input type="hidden" id="latitude" name="m[lat]" value="' + lat + '"/>' + '</fieldset>';*/
+        var marker = new GMarker(latlng) 
+  	    map.removeOverlay(marker);
+        map.addOverlay(marker);
+
+   	  	//map.openInfoWindow (latlng,inputForm);
+    });
+    }
+    }

@@ -1,0 +1,10 @@
+- @guides.each do |guide|
+  %fieldset{:style=>'width:200px;border:1px solid #FCFCFC;float:left;'}
+    %ul
+      %li= guide.title
+      %li= guide.tag_line
+      %li= guide.city
+      %li= guide.stress_factor
+      %li= guide.pacing
+      %li= guide.category
+      %li= link_to 'Add to New Guide', new_guide_path

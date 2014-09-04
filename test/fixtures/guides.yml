@@ -1,0 +1,17 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/Fixtures.html
+
+one:
+  title: MyString
+  tag_line: MyString
+  city: MyString
+  stress_factor: 1
+  pacing: MyString
+  category: MyString
+
+two:
+  title: MyString
+  tag_line: MyString
+  city: MyString
+  stress_factor: 1
+  pacing: MyString
+  category: MyString

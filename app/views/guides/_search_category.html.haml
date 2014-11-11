@@ -1,0 +1,24 @@
+.row  
+  - @guides.each do |guide|
+    .span4
+      %a{:href => '/guides/display?height=600&width=800&id='+guide.id.to_s, :class => 'thickbox '}
+        - @location = Location.find(:first,:conditions =>['guide_id=?',guide.id])
+        - if !@location.nil?
+          - image_url = @location.foursquare_image_url
+          .thumbnails
+            = image_tag(image_url, :size => "280x150")
+        -else
+          = image_tag('home.png', :size => "244x180")
+      -if !guide.title.nil?
+        .guide-title
+          %a{:href => '/guides/display?height=600&width=800&id='+guide.id.to_s, :class=>'thickbox'}
+            = guide.title     
+      -if !guide.tag_line.nil?
+        %p.quote
+          = guide.tag_line
+          = guide.city          
+          Stress:
+          = guide.stress_factor
+          = guide.pacing          
+          = guide.category
+          = link_to 'Add to New Guide', new_guide_path

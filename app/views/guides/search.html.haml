@@ -1,5 +1,9 @@
-- @guides.each do |guide|
-  %fieldset{:style=>'width:200px;border:1px solid #FCFCFC;float:left;'}
+- @guides.each do |guide|  
+  %fieldset{:style=>'width:200px;border:1px solid #000;float:left;'}
+    - @location = Location.find(:first,:conditions =>['guide_id=?',guide.id])
+    - if !@location.nil?
+      - image_url = @location.foursquare_image_url
+      = image_tag(image_url, :size => "260x200")
     %ul
       %li= guide.title
       %li= guide.tag_line

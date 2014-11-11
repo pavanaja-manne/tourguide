@@ -1,27 +1,179 @@
-#page-header
-  = image_tag(@user.img, :size => "100x100")  
-%div{:style=>'position:relative;float:left;padding:0 0 0 762px;text-align:left '}
-  %span
-    = @user.name
-  %br
-  %span
-    = @user.location
-  %br
-  %span
-    = @user.biography
-  %br
-  %span
-    =link_to "Edit Profile", edit_user_path(@user), :style => 'color:grey;'
-%div{:class => 'clear'}
-  %br\
-#content-div{:width=>'100%'}
-  - @guides.each do |guide|
-    %fieldset{:style=>'width:200px;border:1px solid #FCFCFC;float:left;'}
-      %ul
-        %li= guide.title
-        %li= guide.tag_line
-        %li= guide.city
-        %li= guide.stress_factor
-        %li= guide.pacing
-        %li= guide.category        
-   
+.container
+  .hero-unit.span6.offset2{:style => "border-bottom:6px solid #D9D9D9"}
+    .span-two-thirds.pull-left
+      = image_tag(@user.img, :style => "border-radius:50px; padding:10px;", :size => "50x50")
+    .span-one-third.pull-left
+      %table{:style =>'height:100px;width:200px'}
+        %tr
+          %td{:style =>'font-family:helvetica; font-weight:thin; font-size:24px'}
+            = @user.name
+        %tr
+          %td{:style =>'border:none'}
+            = @user.location
+        %tr
+          %td{:style =>'border:none'}
+            = @user.biography
+        %tr
+          %td.active{:style =>'border:none'}
+            - @session_user = User.find_by_uid(session[:user_id])
+            -if @session_user.id == @user.id
+              =link_to "Edit Profile", edit_user_path(@user), :style => 'color:grey;'
+    -if(!session[:user_id].nil?)
+      - if (@user.uid != session[:user_id])      
+        - @session_user = User.find_by_uid(session[:user_id])
+        - followed_ids = @session_user.following.map{|m| m.followed_id }
+        - if(followed_ids.include?(@user.id))
+          #unfollow_link.btn-primary.btn.btn-large{:style =>'background-color:#0060CC;color:white;background-image:-moz-linear-gradient(center top , #0088CC, #0055CC);'}
+            = link_to "Unfollow", "#", :remote => true, :method =>'post', :onclick => "unFollow(#{@user.id.to_s})"
+          #follow_link.btn-primary.btn.btn-large{:style =>'display:none;background-color:#0060CC;color:white;background-image:-moz-linear-gradient(center top , #0088CC, #0055CC);'}
+            = link_to "Follow This User", "#", :remote => true, :method =>'post', :onclick => "Follow(#{@user.id.to_s})"
+        - else
+          #follow_link.btn-primary.btn.btn-large{:style =>'background-color:#0060CC;color:white;background-image:-moz-linear-gradient(center top , #0088CC, #0055CC);'}
+            = link_to "Follow This User", "#", :remote => true, :method =>'post', :onclick => "Follow(#{@user.id.to_s})"
+          #unfollow_link.btn-primary.btn.btn-large{:style =>'display:none;background-color:#0060CC;color:white;background-image:-moz-linear-gradient(center top , #0088CC, #0055CC);'}
+            = link_to "Unfollow", "#", :remote => true, :method =>'post', :onclick => "unFollow(#{@user.id.to_s})"
+    =link_to "Following", '#',:onclick => "followingDetails(#{@user.id.to_s});", :id => "followers_link", :remote => true, :method => 'post'
+    #following{:style => "font-size:18px;text-align:center"}
+      = @user.following.count
+    = hidden_field_tag "following_cnt", @user.followers.count 
+    = link_to "Followers", '#',:onclick => "followersDetails(#{@user.id.to_s});", :id => "followers_link", :style => "text-align:center", :remote => true, :method => 'post'
+    #followers{:style => "font-size:18px;text-align:center"}
+      = @user.followers.count
+    = hidden_field_tag "followers_cnt",  @user.followers.count
+    #connected_users      
+  %div{:style => 'clear:both'}
+  .container
+    - @guides.each do |guide|
+      .row.span6{:style =>'border-bottom:6px solid #D9D9D9;background-color:#fff;margin-bottom:10px;'}
+        .span-two-thirds.pull-left
+          - @location = Location.find(:first,:conditions =>['guide_id=?',guide.id])
+          - if !@location.nil?
+            - image_url = @location.foursquare_image_url
+          = image_tag(image_url, :style => 'padding:10px', :size => "200x200")
+        .span6
+          %table{:style => 'border:none'}
+            -if !guide.title.nil?
+              %tr{:style => 'border:none'}
+                %td
+                  %h3.span6
+                    = guide.title
+            -if !guide.tag_line.nil?
+              %tr{:style => 'border:none'}
+                %td.span6{:style => "font-family: 'georgia',serif; font-style:oblique"}
+                  "
+                  = guide.tag_line
+                  " - Username
+            %tr{:style => 'border:none'}
+              %td{:style => 'border:none'}
+                = guide.city          
+              %td
+                Stress:
+                = guide.stress_factor
+            %tr{:style => 'border:none'}
+              %td{:style => 'border:none'}
+                = guide.pacing          
+              %td{:style => 'border:none'}
+                = guide.category
+          - if (@user.uid == session[:user_id])
+            = link_to content_tag(:i, "", class: "icon-trash icon-white") + "Delete", '/guides/delete?id='+guide.id.to_s,method: :delete, :remote => true, :onclick => "$(this).parent().parent().empty()", class: "btn btn-primary remove_fields", :style=>'float:right'
+            = link_to content_tag(:i, "", class: "icon-trash icon-white") + "Edit", edit_guide_path(guide), class: "btn btn-primary remove_fields", :style=>'float:right'
+:javascript
+  $(document).ready(function(){
+      var followers_cnt = 0
+      var followings_cnt = 0      
+      
+      $("#followers_link").click(function(){
+        $("#following_users").hide();
+        followings_cnt = 0
+        if(followers_cnt == 0){
+            $("#follower_users").show();
+            followers_cnt = 1
+        }
+        else {
+            $("#follower_users").hide();
+            followers_cnt = 0
+        }
+      });
+      $("#followings_link").click(function(){
+        $("#follower_users").hide();
+        followers_cnt = 0
+        if(followings_cnt == 0){
+            $("#following_users").show();
+            followings_cnt = 1
+        }
+        else {
+            $("#following_users").hide();
+            followings_cnt = 0;
+        }
+      });
+  });
+  
+  
+  function unFollow(user_id){
+    $.ajax({
+            datatype: 'html',
+            url: '/users/unfollow_user?other_user_id='+user_id,
+        }).done(function( html ) {
+            unfollow_click();
+            $("#follow_link").show();
+            $("#unfollow_link").hide();
+        });
+  }
+  
+  function Follow(user_id){
+      $.ajax({
+            datatype: 'html',
+            url: '/users/follow_user?other_user_id='+user_id,
+       }).done(function( html ) {
+            follow_click();
+            $("#follow_link").hide();
+            $("#unfollow_link").show();
+      });
+  
+  }
+  
+  function followersDetails(user_id){
+      $.ajax({
+        datatype: 'html',
+        url: '/users/follow_users_details?follower_ids=true&id='+user_id,
+        success: function(data){
+            $('#follower_users').show();
+        }
+     }).done(function( html ) {
+        
+    });
+  
+  
+  
+  }
+  
+  function followingDetails(user_id){
+      $.ajax({
+        datatype: 'html',
+        url: '/users/follow_users_details?following_ids=true&id='+user_id,
+        success: function(data){
+          $('#follower_users').show();
+        }
+     }).done(function( html ) {
+        
+    });
+  
+  
+  
+  }
+  
+  function follow_click(){
+      cnt = $("#following_cnt").val();
+      cnt ++;
+      $("#followers").empty();
+      $("#followers").html(cnt);
+      $("#following_cnt").val(cnt);
+  }
+  
+  function unfollow_click(){
+         cnt = $("#following_cnt").val();
+         cnt --;
+         $("#followers").empty();
+         $("#followers").html(cnt);
+         $("#following_cnt").val(cnt);
+  }

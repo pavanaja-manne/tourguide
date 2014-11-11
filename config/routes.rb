@@ -1,15 +1,30 @@
-DoInDay::Application.routes.draw do
+TourGuide::Application.routes.draw do
   
   get "users/profile"
-  
   root :to => 'guides#index'
+  match "/guides/display" => 'guides#display'
+  match '/guides/delete' => 'guides#delete'
+  match "/guides/location_create" => 'guides#location_create'
   match "/auth/facebook/callback" => "sessions#create"
   match '/guides/search' => 'guides#search'
-  resources :guides do 
+  match '/guides/search_category' => 'guides#search_category'
+  match '/guides/publish_guide' => 'guides#publish_guide'
+  match "/users/profile" => 'users#profile'
+  match '/create_location' => 'guides#location_create'#_fsq'
+  match "/delete_location" => "guides#location_delete_fsq"
+  match "/users/unfollow_user" => "users#unfollow_user"
+  match "/users/follow_user" => 'users#follow_user'
+  match "/users/follow_users_details" => "users#follow_users_details"
+  #match '/:name' => 'users#profile' , :constraints => { :name => /[a-zA-Z0-9\-_]*/ }, :as => :user
+  resources :guides do
       resources :locations
   end
-  
-  resources :users
+  resources :users do
+    member do
+      get :following, :followers
+      post :follow_user, :unfollow_user, :follow_users_details
+    end
+  end
   
   # The priority is based upon order of creation:
   # first created -> highest priority.

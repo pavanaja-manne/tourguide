@@ -1,0 +1,125 @@
+- @locations_guide = @guide.locations
+- @mkr = {}
+- @mkr['lat'] = []
+- @mkr['lng'] = []
+- @mkr['name'] = []
+- @length = @guide.locations.length
+-@guide.locations.each do |location|
+  - @mkr['lat'] << location.lat
+  - @mkr['lng'] << location.long
+  - @mkr['name'] << location.name 
+  = @mkr.inspect
+%br/
+#data{:style=> "background-color:#EBE8EB;"}
+  .thumbnail.pull-left
+    =image_tag @location.foursquare_image_url, :style => "width:150px;height:100px;"
+  = link_to 'X', "#", :remote => true, :onclick => "deleteLocation(#{@location.id.to_s});$(this).parent().remove();", :class => "btn btn-danger pull-right"
+  %h4= @location.name
+  %h6= @location.category
+  %p 
+    = @location.why_i_like
+  %br
+  %div{:style=>"clear:both"}
+    
+%br/
+:javascript
+  $('document').ready(function(){
+          var directionDisplay;
+      var directionsService = new google.maps.DirectionsService();
+      var map; 
+      var lat;
+      var lng;
+    /* HTML 5 geolocation. */
+          if(#{@guide.lat} && #{@guide.lng}){
+          lat = #{@guide.lat};
+          lng = #{@guide.lng};
+          }
+          else{
+          lat = 40.714623;
+          lng = -74.006605;
+          }
+          var myOptions = {
+            zoom: 14,
+            center: new google.maps.LatLng(lat, lng),
+            mapTypeId: google.maps.MapTypeId.ROADMAP
+          };
+          directionsDisplay = new google.maps.DirectionsRenderer();
+          //directionsDisplay.suppressMarkers = true;
+          map = new google.maps.Map(document.getElementById('map_canvas'),  myOptions);
+          directionsDisplay.setMap(map);
+          var len = parseInt('#{@length}')
+          lats = #{@mkr["lat"]}
+          lngs = #{@mkr["lng"]}
+          names = #{@mkr["name"]};
+          var waypts = [];
+          if(len > 2){
+          for(i = 0;i<len;i++){
+            waypts.push({
+                location:new google.maps.LatLng(lats[i], lngs[i]),
+                stopover:true
+            })
+          }
+          }
+          var request = {
+                          origin:new google.maps.LatLng(lats[0], lngs[0]),
+                          destination:new google.maps.LatLng(lats[len-1], lngs[len-1]),
+                          waypoints: waypts,
+                          optimizeWaypoints: true,
+                          travelMode: google.maps.TravelMode.DRIVING
+                      };
+                      directionsService.route(request, function(result, status) {
+                          if (status == google.maps.DirectionsStatus.OK) {
+                            directionsDisplay.setDirections(result);
+                          }
+                      });
+          for(i=0;i<len;i++)
+          {
+                switch(i)
+                {
+                      case 0:
+                        image_url = "http://i.imgur.com/Aquit.png"
+                        break;
+                      case 1:
+                        image_url = "http://i.imgur.com/Yd3Vk.png"
+                        break;
+                      case 2:
+                        image_url = "http://i.imgur.com/7dXVu.png"
+                        break;
+                      case 3:
+                        image_url = "http://i.imgur.com/oXSO1.png"
+                        break;
+                      case 4:
+                        image_url = "http://i.imgur.com/n56IU.png"
+                        break;
+                      case 5:
+                        image_url = "http://i.imgur.com/plOUM.png"
+                        break;
+                      case 6:
+                        image_url = "http://i.imgur.com/JX8JN.png"
+                        break;
+                      case 7:
+                        image_url = "http://i.imgur.com/GUMDT.png"
+                        break;
+                      case 8:
+                        image_url = "http://i.imgur.com/TGwLF.png"
+                        break;
+                      case 9:
+                        image_url = "http://i.imgur.com/VaYnu.png"
+                        break;
+                      default:
+                        image_url = "http://i.imgur.com/Aquit.png"
+                        break;
+                }      
+                //image_url = "http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld="+(i+1)+"|FF0000|000000"
+                var marker = new google.maps.Marker({
+                            position: new google.maps.LatLng(lats[i], lngs[i]),
+                            title: names[i],
+                            map: map//,                            icon: image_url
+                        });
+               //marker.setMap(map);    
+  		     }       
+    
+  
+  
+            });
+    

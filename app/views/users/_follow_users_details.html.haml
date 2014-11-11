@@ -1,0 +1,44 @@
+.container#following_users
+  = @user.name
+  - if params[:following_ids]
+    is Following
+  - if params[:follower_ids]
+    Followers
+  - @follow_users.each do |user|
+    #user_details_div{:style => "border:1px solid #000;height:auto;width:48.6%"}
+      .span-two-thirds.pull-left
+        = image_tag(user.img, :size => "100x100", :style => '')
+      .span-one-third.pull-left
+        %b
+          = user.name
+          = user.location
+          = user.biography
+        - if (user.uid != session[:user_id])
+          - @session_user = User.find_by_uid(session[:user_id])
+          - followed_ids = @session_user.following.map{|m| m.followed_id }
+          - if(followed_ids.include?(user.id))
+            #unfollow_link.unfollow_link.btn-primary.btn{:style =>'background-color:#0060CC;color:white;background-image:-moz-linear-gradient(center top , #0088CC, #0055CC);'}
+              = link_to "Unfollow", "/users/unfollow_user?other_user_id="+user.id.to_s, :remote => true, :method =>'post',:onclick =>"$(this).closest('div.follow_link').show();$(this).parent().hide();"
+            #follow_link.follow_link.btn-primary.btn{:style =>'display:none;background-color:#0060CC;color:white;background-image:-moz-linear-gradient(center top , #0088CC, #0055CC);'}
+              = link_to "Follow This User", "/users/follow_user?other_user_id="+user.id.to_s, :remote => true, :method =>'post',:onclick =>"$(this).closest('div.unfollow_link').show();$(this).parent().hide();"
+          - else
+            #follow_link.follow_link.btn-primary.btn{:style =>'background-color:#0060CC;color:white;background-image:-moz-linear-gradient(center top , #0088CC, #0055CC);'}
+              = link_to "Follow This User", "/users/follow_user?other_user_id="+user.id.to_s, :remote => true, :method =>'post',:onclick =>"$(this).closest('div.unfollow_link').show();$(this).parent().hide();"
+            #unfollow_link.unfollow_link.btn-primary.btn{:style =>'display:none;background-color:#0060CC;color:white;background-image:-moz-linear-gradient(center top , #0088CC, #0055CC);'}
+              = link_to "Unfollow", "/users/unfollow_user?other_user_id="+user.id.to_s, :remote => true, :method =>'post',:onclick =>"$(this).closest('div.follow_link').show();$(this).parent().hide();"
+
+
+:javascript
+  $(document).ready(function(){
+    $('.unfollow_link').click(function(){
+      $(this).parent().closest('div').find('.follow_link').show();
+      $(this).hide();
+    });
+    $('.follow_link').click(function(){
+      $(this).parent().closest('div').find('.unfollow_link').show();
+      $(this).hide();
+    });
+    
+    
+    
+  });

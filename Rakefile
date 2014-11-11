@@ -4,4 +4,4 @@
 
 require File.expand_path('../config/application', __FILE__)
 
-DoInDay::Application.load_tasks
+TourGuide::Application.load_tasks

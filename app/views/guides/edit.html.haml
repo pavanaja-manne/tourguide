@@ -1,0 +1,202 @@
+#page-header  
+  %h2 Create a Guide 
+  %h3 Add-Edit places to the guide below
+#guide_details{:style =>"width:500px;height:200px;padding:0 0 0 500px;"}
+  %h2
+    = @guide.title
+  %br
+  %span
+    = @guide.category
+  %span{:style => 'float:right'}
+    = @guide.stress_factor
+        
+  %span
+    %br/
+    = @user.name
+  %span{:style => 'float:right'}
+    = @guide.pacing
+  %br/
+#map_canvas{:style =>"width:500px;height:300px;position:relative;top:-18px;left:494px;"} 
+%form
+  %table{:style=>'padding:0 0 0 562px;'}    
+    %tr
+      %td
+        Search Location
+      %td
+        %input#venue{:style => "width:300px;height:44px"}
+        Minimum 3 Characters    
+    %tr{:id => 'choose_image_row',:style => 'display:none'}
+      %td
+        Choose Image
+      %td#choose_image_column
+    %tr
+      %td
+        Why do You Like it?
+      %td
+        =text_area_tag :location_about, nil,:cols => '40', :rows => '3'
+    %tr
+      %td
+        Categories
+      %td
+        =select_tag :location_category, options_for_select(@location_categories), :style => 'width:200px;height:24px'
+        =hidden_field_tag :location_long
+        =hidden_field_tag :location_lat
+        =hidden_field_tag :location_four_square_id   
+        =hidden_field_tag :location_image     
+    %tr
+      %td
+      %td       
+        %input{:type => 'button', :value => 'Add Location', :id => 'add_location'}
+#content-div-location{:style => "padding:0 0 0 300px;width:100%;"}
+  - @locations.each do |location|
+    %table.content_field{:style=>'width:700px;height:30px;border:2px solid #FCFCFC;background-color:#939292'}
+      %tr
+        %td
+          =image_tag(location.foursquare_image_url, :size => "100x100")
+        %td= location.name
+        %td= location.tag
+        %td= location.why_i_like
+        %td= location.category
+        %td= link_to 'X', "/locations/delete?id=#{location.id}", :remote => true, :onclick => "$(this).parents('table').empty()"
+#publish{:style => 'float:right'}
+  %input{:type => 'button', :value => 'Publish',:id => 'publish', :style => 'height:50px;width:150px;font-size:24'}
+
+
+  /=render :partial => 'new_location'
+:javascript
+  $('document').ready(function(){
+    /* HTML 5 geolocation. */
+    $("#publish").click(function(){
+    id = '#{@guide.id}'
+    $.ajax({type:"post", 
+            url:'/guides/publish_guide?id='+id
+            
+            });
+            window.location.href = "/";
+    
+    });
+          var lat = #{@guide.lat};
+          var lng = #{@guide.lng};
+          var myOptions = {
+            zoom: 14,
+            center: new google.maps.LatLng(lat, lng),
+            mapTypeId: google.maps.MapTypeId.ROADMAP
+          };
+          var map = new google.maps.Map(document.getElementById('map_canvas'),  myOptions);
+          // Add Marker Manager
+          var geodesic = new google.maps.Polyline({geodesic: true});
+          var path = geodesic.getPath();
+          //var mgrOptions = { borderPadding: 50, maxZoom: 15, trackMarkers: true };          
+          //mgr = new google.maps.MarkerManager(map,mgrOptions);
+          /* Query foursquare API for venue recommendations near the current location. */
+          token = 'DBHKFSCXVMRTB5HSZD3DU5ZMTZSXYVPIAACZMYJ3OBQ02CH2'    
+          $( "#venue" ).autocomplete({
+              source: function( request, response ) {
+                  var search_key = $('#venue').val();
+  	              $.ajax({
+  				            url: 'https://api.foursquare.com/v2/venues/suggestCompletion?limit=10&ll=' + lat + ',' + lng +'&query='+search_key+ '&oauth_token=' + token,
+  				            dataType: "jsonp",
+  				            data: {
+  					              featureClass: "P",
+  					              style: "full",
+  					              maxRows: 12,
+  					              name_startsWith: request.term
+  				            },
+  				            success: function( data ) {  				                  
+  				                  data = data['response']['minivenues']
+  				                  console.log(data)
+  					                response( $.map( data, function( item ) {
+  						                return {
+  							                  label: item.name +(item.location.address ? ", " + item.location.address : ""), 
+  							                  value: item.name,
+  							                  lng: item.location.lng,
+    							                lat: item.location.lat,
+    							                foursquare_id: item.id
+  						                }
+  					                }));
+  				            }
+  			         });
+  		        },
+  		        minLength: 2,
+  		        select: function( event, ui ) {
+  		            $("#location_four_square_id").val(ui.item.foursquare_id);
+  		            $("#location_long").val(ui.item.lng);
+  		            $("#location_lat").val(ui.item.lat);
+  		            //mgr.addMarker(marker:marker,minZoom:5,opt_maxZoom:14)
+  		            var marker = new google.maps.Marker({
+                      position: new google.maps.LatLng(ui.item.lat, ui.item.lng),
+                      map: map,
+                      title: ui.item.name
+                  });
+                  //mgr.addMarker(marker:marker,minZoom:5,opt_maxZoom:14)
+                  marker.setMap(map)
+  		            $.getJSON('https://api.foursquare.com/v2/venues/'+$("#location_four_square_id").val()+'/photos?group=venue&oauth_token='+token,{}, function(data) {
+  	                    //console.log(data['response']['photos'])
+  	                    var image = data['response']['photos']['items']
+  	                    $('#choose_image_row').show();
+  	                    $('#choose_image_column').empty();
+  	                    
+  	                    
+  	                    for(i = 0;i<image.length;i++)
+  	                    {
+  	                    
+  	                        if(i<5){
+  	                        var image_url = image[i]["url"]
+  	                        console.log(image_url)
+  	                        $(document.createElement("img"))
+                                    .attr({ src:image[i]["url"] , title: 'select your choice ', style: 'width:80px;height:80px;cursor:pointer', class: 'imagePicker', id:image[i]["url"] })                                    
+                                    .appendTo($("#choose_image_column"));
+                             $("#choose_image_column").append("<nbsp></nbsp>");
+                                
+  	                        
+  	                        } 	                           
+  	                    }
+  	                    
+  		                  $('img.imagePicker').click(function(){
+  		                  var image_url = $(this).attr('id')
+                                  $("#location_image").val(image_url)
+                         })
+  	              }); 
+  		        },
+  		        open: function() {
+  			            $( this ).removeClass( "ui-corner-all" ).addClass( "ui-corner-top" );
+  		        },
+  		        close: function() {
+  			            $( this ).removeClass( "ui-corner-top" ).addClass( "ui-corner-all" );
+  		        }
+       });    
+    
+  
+    //init();
+  	$("#add_location").click(function(){  	       	        
+  	        
+  				$.ajax({
+                               // type : "GET",
+                                datatype: 'html',
+                                url: '/guides/location_create?name='+$("#venue").val()+'&tag='+$("#location_tag").val()+'&about='+$("#location_about").val()+'&long='+$("#location_long").val()+'&lat='+$("#location_lat").val()+"&guide_id=#{@guide.id}&category="+$("#location_category").val()+"&foursquare_id="+$("#location_four_square_id").val()+"&image="+$('#location_image').val(),
+                                success: function(data) {
+                                  $("#venue").val('');
+                                  $("#location_tags").val('');
+                                  $("#location_about").val('');
+                                  $("#location_long").val('');
+                                  $("#location_lat").val('')
+                                  $("#location_four_square_id").val("");
+                                  $("#location_category").val('');
+                                  $("#location_image").val("");
+                                  $("#choose_image_column").empty();  
+                                },
+                                error : function() {
+                                         alert("Sorry, The requested property could not be found.");
+                                }
+                        }).done(function( html ) {
+                             console.log(html)
+                            
+                            $("#content-div-location").append($(html));
+                          });
+  					});
+  	
+      });
+      
+      
+       function add_pic(id){
+       }

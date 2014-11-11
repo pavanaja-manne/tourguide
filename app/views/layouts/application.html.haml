@@ -1,48 +1,181 @@
-%html
+!!!
+%html{:lang => "en"}
   %head
-    %title Do In a Day
-    = stylesheet_link_tag    "application", :media => "all"
-    = javascript_include_tag "application","http://maps.google.com/maps?file=api&amp;v=2&amp;key=AIzaSyARDa-zSGZaZpd_U05Qxu4tkqRHJg6Vieg"
+    %meta{:charset => "utf-8"}/
+    %title Tour Guide: Plan your trips
+    %meta{:content => "width=device-width, initial-scale=1.0", :name => "viewport"}
+    %meta{:content => "", :name => "description"}
+    %meta{:content => "", :name => "author"}
+    %meta{:content => "yes", :name => "apple-mobile-web-app-capable"}
+    = javascript_include_tag 'jquery-1.7.2.min.js','application.js','http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js'
+    %link{:charset => "utf-8", :href => "/css/apercu.css", :rel => "stylesheet", :type => "text/css"}
+    %link{:href => "/assets/doinaday_icon.png", :rel => "apple-touch-icon"}
+    = stylesheet_link_tag 'jquery-ui-1.8.20.custom.css', 'thickbox.css', "bootstrap.css", "bootstrap-responsive.css"
     = csrf_meta_tags
   %body
-    #header-div 
-      = submit_tag "Do In a Day",:onclick => 'window.location.href = "/"', :style=>'float:left;background-color:#230C0C;font-size:22px;margin:20px 0 0 0;'
-      = link_to "Create", new_guide_path      
-      = submit_tag "Browse", :id=>'browse', :style => 'background-color:#230C0C;'
-      = text_field_tag "key_word",'', :class=>'search_field'
-      #login_div{:style => "position:fixed;top:0px;right:10px;font-size:20px;color:#4A8CEF;"}
-        - if session[:user_id].nil?
-          = link_to "Log in with Facebook", "/auth/facebook"
-        - else
-          - @user = User.find_by_uid(session[:user_id])
-          = image_submit_tag @user.img, :onclick=>'window.location = "/users/profile"'
-          = link_to @user.name, "/users/profile"
-          = link_to "Logout", "/sessions/destroy"
-    #notice
-      = notice
+    - if session[:user_id].blank?
+      .signup-unit      
+    %div{:style => "clear:both"}
+    .navbar
+      .navbar-inner
+        .container
+          .span3
+          %a.btn.btn-navbar{"data-target" => ".nav-collapse", "data-toggle" => "collapse"}
+            %span.icon-bar
+            %span.icon-bar
+            %span.icon-bar
+          %a.brand.nav
+            =image_tag( "/assets/logo-main.png", :onclick => "window.location.href = '/'",:style => "cursor:pointer;margin-left:-20px;margin-top:-5px")
+          .nav-collapse
+            .nav
+              %userlogedin{:style => "float:right;margin-top:-14px;"}
+                - if session[:user_id].nil?
+                  = link_to image_tag( 'fb_login.png'), "/auth/facebook"
+                  = link_to  "Login", "/auth/facebook"
+                - else
+                  - @user = User.find_by_uid(session[:user_id])
+                  - url = '/'+@user.to_param.split(" ").join
+                  /name_path(@user,:id => @user.id)
+                  %a{"data-toggle" => "dropdown", :href =>'/users/profile?user_id='+@user.id.to_s , :method => 'post'}
+                    = image_tag(@user.img,:style => "float:left; margin-top:0px; margin-top:10px; border-radius: 35px;", :size => '25x25')
+                  %a.userlogedin{:style => "float:left;", :href =>'/users/profile?user_id='+@user.id.to_s , :method => 'post'}
+                    = @user.name
+                  .userlogout{:style=> "color:red !important;"}
+                    = link_to "Logout", "/sessions/destroy", :style => "color:red;font-size:14px"
+              %li
+                = link_to "Create Guide", new_guide_path
+      - if session[:user_id].blank?
+        .signup-container{:style => "position:relative !important;"}
+          %h1
+            Tour Guide
+          %p
+            Create your own tour guide and explore others too.
+          %p
+            =link_to image_tag('facebook_btn.png'), "/auth/facebook"
+    = javascript_include_tag 'jquery-1.7.2.min.js','http://maps.googleapis.com/maps/api/js?key=AIzaSyARDa-zSGZaZpd_U05Qxu4tkqRHJg6Vieg&libraries=geometry,places&sensor=false','http://www.google.com/jsapi?key=AIzaSyARDa-zSGZaZpd_U05Qxu4tkqRHJg6Vieg','jquery-ui-1.8.20.custom.min.js', 'thickbox.js', 'bootstrap-transition.js', "bootstrap-alert.js", "bootstrap-modal.js", "bootstrap-dropdown.js", "bootstrap-scrollspy.js", "bootstrap-tab.js", "bootstrap-tooltip.js", "bootstrap-popover.js", "bootstrap-button.js", "bootstrap-collapse.js", "bootstrap-carousel.js", "bootstrap-typeahead.js", "jquery.masonry.min.js"
+    = javascript_include_tag "application", "http://html5shim.googlecode.com/svn/trunk/html5.js",'jquery-ui-1.8.20.custom.min.js', 'bootstrap.js',  "/javascripts/jquery.masonry.min.js"
     = yield
+    .container
+      .row
+        .span12{:style => "text-align:center"}
+          %footer
+            %p © 2014 Tour Guide
 
 :javascript
-  $('document').ready(function(){	
-  	$('#browse').click(function(){  
-  		$.ajax({
-                               // type : "GET",
+  /* $(function(){
+    var
+      $win = $(window),
+      $filter = $('.navbar'),
+      $filterSpacer = $('<div />', {
+        "class": "fi",
+        "height": $filter.outerHeight()
+      });
+    $win.scroll(function(){
+      if(!$filter.hasClass('fix') && $win.scrollTop() > $filter.offset().top){
+        $filter.before($filterSpacer);
+        $filter.addClass("fix");
+      } else if ($filter.hasClass('fix')  && $win.scrollTop() < $filterSpacer.offset().top){
+        $filter.removeClass("fix");
+        $filterSpacer.remove();
+      }
+    });
+    });*/
+
+
+
+:javascript
+  
+  $(document).ready(function(){
+    
+    var lat = '';
+    var lat = '';
+
+    $('#browse1').click(function(){
+      $.ajax({
                                 datatype: 'html',
                                 url: 'guides/search?keyword='+$("#key_word").val(),
 
-                               /* success: function(data) {
-                                $('#content-div').empty();
-                                alert(data);
-                                console.log("Im here");
-                                console.log(data);
-  								jQuery('#content-div').html(data);
-                                },
-                                error : function() {
-                                         alert("Sorry, The requested property could not be found.");
-                                }*/
                         }).done(function( html ) {
                             $("#content-div").html("");
                             $("#content-div").append(html);
                           });
-  					});
-  });
+            });
+     });
+  function initialize() {
+                  var input = document.getElementById('key_word');
+                  var autocomplete = new google.maps.places.Autocomplete(input);
+                  google.maps.event.addListener(autocomplete, 'place_changed', function() {
+                              var place = autocomplete.getPlace();
+                              lat = place['geometry']['location'].lat();
+                              lng = place['geometry']['location'].lng();
+                  });
+  }
+  $("#location_search").click(function(){
+                $('#guide_container').html('');
+                latlng = lat+ ","+lng;
+                var token = 'DBHKFSCXVMRTB5HSZD3DU5ZMTZSXYVPIAACZMYJ3OBQ02CH2';
+             	$.getJSON('https://api.foursquare.com/v2/venues/trending?ll='+latlng+'&oauth_token='+token+'&v=20130222',{}, function(data) {                  
+  	                    var venues = data['response']['venues'];
+  	                    if(venues == null || venues == '')
+  	                    {
+                              $.getJSON('https://api.foursquare.com/v2/venues/search?ll='+lat+','+lng+'&oauth_token='+token+'&v=20130222',{}, function(data) {
+  	                    			var venues = data['response']['venues'];
+  	                    			for(var i = 0; i<venues.length ; i++){
+  	                    				var venue_name = venues[i]['name'];
+  	                    				var venue_address = venues[i]['location']['address'];
+  	                    				var venue_category = venues[i]['categories'][0]['name'];
+  	                    				var venue_id = venues[i]['id'];
+                                    	var image_url = '';
+                                    	$.ajaxSetup({async:false});
+          	                    		$.getJSON('https://api.foursquare.com/v2/venues/'+venues[i]['id']+'/photos?group=venue&v=20130222&oauth_token='+token,{}, function(data) {
+                                    if(data['response']['photos']['count'] != 0){
+  	  	                    				      image_url = data['response']['photos']['items'][0]["url"];
+                                          }
+                                    $('#guide_container').append("<div class='span4'><div class='guidemaker' id='"+venue_id+"' style='color:#000 !important;background-color:#F9FBFC;width:100%;height:160px;' ><div style='width:45%;height:100%;float:left;'><img id='"+venue_id+"' src='"+image_url+"' style='width:80px;height:80px;cursor:pointer; padding:5px;'></img><h3>"+venue_name+"</h3><h4>"+venue_address+"</h4><h3>"+venue_category+"</h3></div><div style='width:40%;height:100%;float:left;'> <input type='button'  id='"+venue_id+"' onclick='create_guide(this.id);'  value='Add Place' /></div></div></div>");
+  		  	              				});
+                                    	
+          	                    	}
+          	                  		/*for(var i = 0; i<venues.length ; i++){
+                                		var venue_id = venues[i]['id'];
+                                		alert(venue_id);
+                               			 var image_url = null;
+                               			 alert(venue_id);
+                                		$.ajaxSetup({async:false});
+          	                    		$.getJSON('https://api.foursquare.com/v2/venues/'+venues[i]['id']+'/photos?group=venue&v=20130222&oauth_token='+token,{}, function(data) {
+                                    if(data['response']['photos']['count'] != 0){
+  	  	                    				      image_url = data['response']['photos']['items'][0]["url"];
+                                          }
+  		  	              				});
+  		  	              				$("div#"+venues[i]['id']).children('div').eq(0).find('img').attr('src',image_url);
+  		  	              			}*/
+
+  	                         	});
+
+  	                    }
+  	                    else{
+  	                    for(i = 0; i<venues.length ; i++){
+  	                    			var venue_name = venues[i]['name'];
+  	                    			var venue_address = venues[i]['location']['address'];
+  	                    			var venue_category = venues[i]['categories'][0]['name'];
+  	                    			var venue_id = venues[i]['id'];
+                                    var image_url = '';
+                                    $('#guide_container').append("<div class='span4'><div class='guidemaker' id='"+venue_id+"' style='color:#000 !important;background-color:#F9FBFC;width:100%;height:160px;' ><div style='width:45%;height:100%;float:left;'><img id='"+venue_id+"'  style='width:80px;height:80px;cursor:pointer; padding:5px;'></img><h3>"+venue_name+"</h3><h4>"+venue_address+"</h4><h3>"+venue_category+"</h3></div><div style='width:40%;height:100%;float:left;'>Sample Text <input type='button'  id='"+venue_id+"' onclick='create_guide(this.id);'  value='Add Place' /></div></div></div>");
+
+          	                    }
+          	                  for(i = 0; i<venues.length ; i++){
+                                var venue_id = venues[i]['id'];
+                                var image_url = null;
+                                $.ajaxSetup({async:false});
+          	                    $.getJSON('https://api.foursquare.com/v2/venues/'+venues[i]['id']+'/photos?group=venue&v=20130222&oauth_token='+token,{}, function(data) {
+                                  if(data['response']['photos']['count'] != 0){
+  	  	                    			    image_url = data['response']['photos']['items'][0]["url"];
+                                      }
+  		  	              			});
+  		  	              			$("div#"+venues[i]['id']).children('div').eq(0).find('img').attr('src',image_url);
+  		  	              		}
+                            }
+  	              });
+
+             });
+        google.maps.event.addDomListener(window, 'load', initialize);
+

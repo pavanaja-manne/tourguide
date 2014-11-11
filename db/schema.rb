@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120509101336) do
+ActiveRecord::Schema.define(:version => 20140218165724) do
 
   create_table "guides", :force => true do |t|
     t.string   "title"
@@ -23,18 +23,35 @@ ActiveRecord::Schema.define(:version => 20120509101336) do
     t.datetime "created_at",    :null => false
     t.datetime "updated_at",    :null => false
     t.integer  "user_id"
+    t.boolean  "publish"
+    t.float    "lat"
+    t.float    "lng"
   end
 
   create_table "locations", :force => true do |t|
-    t.float    "lat"
-    t.float    "long"
     t.string   "name"
+    t.float    "long"
+    t.float    "lat"
     t.string   "tag"
-    t.text     "about"
+    t.string   "category"
+    t.text     "why_i_like"
+    t.datetime "created_at",           :null => false
+    t.datetime "updated_at",           :null => false
     t.integer  "guide_id"
-    t.datetime "created_at", :null => false
-    t.datetime "updated_at", :null => false
+    t.string   "foursquare_id"
+    t.string   "foursquare_image_url"
+    t.integer  "user_id"
+    t.string   "address"
   end
+
+  create_table "relationships", :force => true do |t|
+    t.integer  "follower_id"
+    t.integer  "followed_id"
+    t.datetime "created_at",  :null => false
+    t.datetime "updated_at",  :null => false
+  end
+
+  add_index "relationships", ["follower_id", "followed_id"], :name => "index_relationships_on_follower_id_and_followed_id", :unique => true
 
   create_table "users", :force => true do |t|
     t.string   "uid"

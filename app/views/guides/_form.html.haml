@@ -1,37 +1,78 @@
-= form_for(@guide) do |f|
-  - if @guide.errors.any?
-    #error_explanation
-      %h2
-        = pluralize(@guide.errors.count, "error")
-        prohibited this guide from being saved:
-      %ul
-        - @guide.errors.full_messages.each do |msg|
-          %li= msg
-  .field
-    = f.label :title
-    %br/
-    = f.text_field :title, :place_holder => "Title"
-  .field
-    = f.label :tag_line
-    %br/
-    = f.text_field :tag_line
-  .field
-    = f.label :city
-    %br/
-    = f.text_field :city
-  .field
-    = f.label :stress_factor
-    %br/
-    = f.select :stress_factor, @stress_factor,{},:class=>'selectBox'
-  .field
-    = f.label :pacing
-    %br/
-    = f.select :pacing, @pacing, {},:class=>'selectBox'
-  .field
-    = f.label :category
-    %br/
-    = f.select :category, @category, {},:class=>'selectBox'
-  .actions
-    - val1 = @user.id
-    = f.hidden_field :user_id,:value => val1
-    = f.submit
+:css  
+  .hero-unit {
+  background-image :url(img/hero.png);
+  background-color :#FFF;
+  background-repeat:no-repeat;
+  }
+    / Le HTML5 shim, for IE6-8 support of HTML5 elements
+/[if lt IE 9]
+  %script{:src=>"http://html5shim.googlecode.com/svn/trunk/html5.js"}
+/ Le fav and touch icons
+%link{:href => "../assets/ico/favicon.ico", :rel => "shortcut icon"}
+  %link{:href => "../assets/ico/apple-touch-icon-144-precomposed.png", :rel => "apple-touch-icon-precomposed", :sizes => "144x144"}
+    %link{:href => "../assets/ico/apple-touch-icon-114-precomposed.png", :rel => "apple-touch-icon-precomposed", :sizes => "114x114"}
+      %link{:href => "../assets/ico/apple-touch-icon-72-precomposed.png", :rel => "apple-touch-icon-precomposed", :sizes => "72x72"}
+        %link{:href => "../assets/ico/apple-touch-icon-57-precomposed.png", :rel => "apple-touch-icon-precomposed"}
+%body
+.hero-unit
+  %center
+    %h2
+      Create Guide
+    %p Tell us about your guide.
+.container
+  .span7.offset2
+    = form_for(@guide, :html => { :class => 'well' }) do |f|
+      - if @guide.errors.any?
+        #error_explanation
+          %h2
+            = pluralize(@guide.errors.count, "error")
+            prohibited this guide from being saved:
+          %ul
+            - @guide.errors.full_messages.each do |msg|
+              %li= msg      
+      %h4{:style => "padding: 10px;"} Guide Title
+      = f.text_field :title, :placeholder => "Name of your guide",:class => 'span6 validate[required]', :style => "font-family: 'Varela Round',sans-serif; font-weight:400; font-size:18px; height: 30px;"
+      %h4{:style => "padding: 10px;"} Tag Line
+      = f.text_field :tag_line,:class => 'span6 validate[required]',:placeholder => "What it all about?", :style => "font-family: 'Georgia', serif; font-size: 16px; font-style: italic; height: 30px;"      
+      %h4{:style => "padding: 10px;"} City
+      = f.text_field :city, :class => 'span6 validate[required]', :placeholder => "Type name of City", :style => "height: 30px;"
+      = f.select :category, @category, {},:class=>'selectBox', :id => 'select'
+      = f.select :stress_factor, @stress_factor,{},:class=>'selectBox', :id => 'select'
+      - val1 = @user.id
+      = f.hidden_field :user_id,:value => val1
+      = f.hidden_field :lat
+      = f.hidden_field :lng      
+      %button.btn.btn-primary.pull-right{:onclick => "submit"} Create
+     
+%script{:src => "js/jquery.js"}
+%script{:src => "js/bootstrap-transition.js"}
+%script{:src => "js/bootstrap-alert.js"}
+%script{:src => "js/bootstrap-modal.js"}
+%script{:src => "js/bootstrap-dropdown.js"}
+%script{:src => "js/bootstrap-scrollspy.js"}
+%script{:src => "js/bootstrap-tab.js"}
+%script{:src => "js/bootstrap-tooltip.js"}
+%script{:src => "js/bootstrap-popover.js"}
+%script{:src => "js/bootstrap-button.js"}
+%script{:src => "js/bootstrap-collapse.js"}
+%script{:src => "js/bootstrap-carousel.js"}
+%script{:src => "js/bootstrap-typeahead.js"}
+=javascript_include_tag "jquery.validationEngine-en.js","jquery.validationEngine.js"
+
+:javascript
+  function initialize() {
+                  var input = document.getElementById('guide_city');
+                  var autocomplete = new google.maps.places.Autocomplete(input);
+                  google.maps.event.addListener(autocomplete, 'place_changed', function() {
+                  var place = autocomplete.getPlace();
+                  lat = place['geometry']['location'].lat()
+                  lng = place['geometry']['location'].lng()
+                  $("#guide_lat").val(lat);
+                  $("#guide_lng").val(lng);
+                  });
+             }
+             $('document').ready(function(){
+                   initialize();
+                   $('form').validationEngine('attach', {promptPosition : "centerLeft", scroll: false});
+             });
+             google.maps.event.addDomListener(window, 'load', initialize);

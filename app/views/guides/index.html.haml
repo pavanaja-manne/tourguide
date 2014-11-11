@@ -1,21 +1,353 @@
-#page-header  
-  %h2 Create Share and Discuss Awesome TravelGuides
-  %h3 Taking a quick day trip or venturing into unfamiliar territory? Whatever you are we tell you how to make the best of it.
-#info{:style => 'position:relative;top:84px'}
-  Guides Just Added
-  =select_tag "browse_by",options_for_select(@browse_by),{:class=>'selectBox',:align=>'right'}
-  =select_tag "chars",options_for_select(@characteristics),{:class => 'selectBox'}
-  =image_submit_tag "grid.png", :onclick => '$(".content_field").css("width","20%");'
-  =image_submit_tag "lined.png", :onclick => '$(".content_field").css("width","100%");'
-#content-div    
-  - @guides.each do |guide|
-    %fieldset.content_field{:style=>'width:20%;border:1px solid #FCFCFC;float:left;'}
-      %ul
-        %li= guide.title
-        %li= guide.tag_line
-        %li= guide.city
-        %li= guide.stress_factor
-        %li= guide.pacing
-        %li= guide.category
-        %li= link_to 'Add to New Guide', new_guide_path
-#new_content-div
+.container
+  .row
+    .span.offset4
+      %div.form-search
+        %input#key_word.input-small.search-query{:name => "city_search", :placeholder => "Search a City", :style => "float:left; border-radius:30px 30px 30px 30px;size:36px;height:30px; margin:10px; padding-left:20px;width:175px;", :type => "text"}/
+        %button.span1.btn.btn-large.btn-block.btn-primary#location_search{:style => "float:right; margin: 10px;", :type => "buttton"} Search
+  .container
+    .row
+      .span4{:style => "padding:20px;"}
+        %img{:style => "float:left;padding-right:10px;", :src => "assets/pin_lrg.png"}
+          %h2 Top Places
+      %h3{:style => "padding:20px;font-family:'helvetica',arial,sans-serif; font-size:14px;float:right;font-weight:normal;"}
+        %a See all
+    .span12
+      - i = 0
+      - @guides.each do |guide|
+        .span3.cards
+          %a{:href => '/guides/display?height=600&width=800&id='+guide.id.to_s, }
+            .thumbnail
+              - @location = Location.find(:first,:conditions =>['guide_id=?',guide.id])
+              - if !@location.nil?
+                - image_url = @location.foursquare_image_url
+                = image_tag(image_url, :size => "270x140")
+              - else
+                = image_tag('home.png', :size => "244x180")
+          %h6
+            = guide.category
+          %h3
+            %a{:href => '/guides/display?height=600&width=800&id='+guide.id.to_s, }
+              = guide.title
+          %p{:style => "color: #BBBBBB;font-weight:bold; font-size: 11px; padding-left: 10px;"}
+            %img{:height => "14", :src => "assets/pin.png"}/
+            = guide.city
+            %button.saveguide{:type => "submit" } + Add this guide
+        - i += 1
+        - if i%4 == 0
+          %br
+          .span3
+          %button.span9.btn.btn-large.btn-block.btn-more.offset1{:type => "button", :style => "margin-bottom:20px;",} More Places
+.topplaces-area
+  .container{:style => "background-color:#ffffff;"}
+    .row
+      .span4{:style => "padding:20px;"}
+        %img{:style => "float:left;padding-right:10px;", :src => "assets/map.png"}
+          %h2 Popular Guides
+      %h3{:style => "padding:20px;font-family:'helvetica',arial,sans-serif; font-size:14px;float:right;font-weight:normal;"}
+        %a See all
+    .span12
+      - i = 0
+      - @guides.each do |guide|
+        .span3.cards
+          %a{:href => '/guides/display?&id='+guide.id.to_s, }
+            .thumbnail
+              - @location = Location.find(:first,:conditions =>['guide_id=?',guide.id])
+              - if !@location.nil?
+                - image_url = @location.foursquare_image_url
+                = image_tag(image_url, :size => "270x140")
+              - else
+                = image_tag('home.png', :size => "244x180")
+          %h6
+            = guide.category
+
+          %h3
+            %a{:href => '/guides/display?height=600&width=800&id='+guide.id.to_s, }
+              = guide.title
+          .tagline
+            = guide.tag_line
+          %p{:style => "color: #BBBBBB;font-weight:bold; font-size: 11px; padding-left: 10px;"}
+            %img{:height => "14", :src => "assets/pin.png"}/
+            = guide.city
+            
+        - i += 1
+        - if i%4 == 0
+          %br
+          .span3
+          %button.span9.btn.btn-large.btn-block.btn-more.offset1{:type => "button", :style => "margin-bottom:20px;",} More Guides
+
+.nav-collapse
+  .container
+    .span12#guide_container
+
+.nav-collapse{:style=>'background-color:#E9E9E9;border:1px solid #000;'}
+  .container
+    .span12#my_guides_container
+      My Guides
+      - @user = User.find_by_uid(session[:user_id])
+      - if !@user.nil?
+        - @locations = @user.locations
+      - if @locations.nil?
+        - @locations = []
+      - @locations.each do |l|
+        .span4
+          .guidemaker{:style=>"width:100%;height:160px;"}
+            %div{:style=>'width:45%;height:100%;float:left;'}
+              = image_tag l.foursquare_image_url,{:style=>'width:80px;height:80px;cursor:pointer; padding:5px;'}
+              %h3
+                = l.name
+              %h4
+                = l.address
+              %h3
+                = l.category
+            %div{:style=>'width:40%;height:100%;float:left;'}
+              Sample Text
+              %input{:type => "button",:onclick => "delete_guide(this.id);", :value => "Remove Place", :id =>"#{l.foursquare_id}remove" }
+
+%br/
+.footer.modal-footer{:style =>"height:10px;clear:both;position:fixed;bottom:0px;"}
+  #fb-root
+  .fb-like{"data-send" => "true", "data-show-faces" => "true", "data-width" => "450"}
+</script>
+:javascript
+  
+  (function(d, s, id) {   var js, fjs = d.getElementsByTagName(s)[0];      if (d.getElementById(id)) return;
+      js = d.createElement(s); js.id = id;
+      js.src = "//connect.facebook.net/en_GB/all.js#xfbml=1&appId=206096812769730";
+      fjs.parentNode.insertBefore(js, fjs);
+  }(document, 'script', 'facebook-jssdk'));
+      function create_guide(id){
+            session_id = '#{session[:user_id]}'
+            if (session_id == '' || session_id == null)
+            {
+              alert("Please Login to Add Place");
+              return false;
+            }
+      	    var token = 'DBHKFSCXVMRTB5HSZD3DU5ZMTZSXYVPIAACZMYJ3OBQ02CH2';
+      	$.getJSON('https://api.foursquare.com/v2/venues/'+id+'?group=venue&oauth_token='+token,{}, function(data) {
+        	    resp = data['response']['venue']['name'];
+              var image_url = $("div#"+id).find('img').attr('src')
+              var venue_name = data['response']['venue']['name'];
+  	       	  var venue_address = data['response']['venue']['location']['address'];
+              var venue_category = data['response']['venue']['categories'][0]['name'];
+            $.ajax({
+  		  	      url: "/create_location?fsq_id="+id+"&image_url="+image_url+"&name="+venue_name+"&address="+venue_address+"&category="+venue_category,
+  		  	      success:function(data){
+  		  		        if (data != "you have already added the location"){
+    		  		          my_guide =  $("div#"+id).parent('div.span4').clone();
+    		  		          btn_fld = my_guide.children('div').eq(0).children('div').eq(1).find('input');
+                        //my_guide.children('div').eq(0).children('div').eq(1).find('input')
+                        btn_fld.attr('value','Remove Place');
+                        btn_fld.attr('id',id+"remove");
+                        btn_fld.attr('onclick','delete_guide(this.id)');
+                        //remove();
+                          $("#my_guides_container").append(my_guide);
+
+  		  		          }
+  		  		          alert(data);
+  		            }
+  		        }).done(function() {
+
+  		          });
+      	  });
+      }
+
+      function delete_guide(id){
+      	$.ajax({
+  		  	url: "/delete_location?fsq_id="+id,
+  		  	success:function(data){
+  		   		  		alert(data);
+  		  }
+  		  }).done(function() {
+  		    //var val = $("#"+id).attr('value');
+  		    $('#'+id).parent("div").parent('div').parent('div.span4').remove();
+
+  		});
+      }
+  $(document).ready(function(){
+        session_id = '#{session[:user_id]}'
+        var long = '';
+        var lat = '';
+        if (navigator.geolocation) {
+              var positionTimer = navigator.geolocation.watchPosition(
+               function( position ){
+               lat = position.coords.latitude;
+               long = position.coords.longitude;
+              // Set the new position of the existing marker.
+              //updateMarker(locationMarker,position.coords.latitude,position.coords.longitude,"Updated / Accurate Position");
+        }
+    );
+
+  setTimeout(  function(){  
+          navigator.geolocation.clearWatch( positionTimer );
+    },  (1000 * 60 * 5)  );
+  }
+
+  if (lat == ''){
+  	lat = 40.7;
+  }
+  if (long == ''){
+  	long = -74;
+  }
+
+
+    // Guides Display
+    var token = 'DBHKFSCXVMRTB5HSZD3DU5ZMTZSXYVPIAACZMYJ3OBQ02CH2'
+    lat = lat.toFixed(2)
+  long = long.toFixed(2)
+       $.getJSON('https://api.foursquare.com/v2/venues/trending?v=20140806&ll='+lat+','+long+'&oauth_token='+token,{}, function(data) {
+
+  	                    var venues = data['response']['venues'];
+  	                    for(i = 0; i<venues.length ; i++){
+  	                    			var venue_name = venues[i]['name'];
+  	                    			var venue_address = venues[i]['location']['address'];
+  	                    			var venue_category = venues[i]['categories'][0]['name'];
+  	                    			var venue_id = venues[i]['id'];
+                                    var image_url = '';
+                                    $('#guide_container').append("<div class='span4'><div class='guidemaker' id='"+venue_id+"' style='color:#000 !important;background-color:#F9FBFC;width:100%;height:160px;' ><div style='width:45%;height:100%;float:left;'><img id='"+venue_id+"'  style='width:80px;height:80px;cursor:pointer; padding:5px;'></img><h3>"+venue_name+"</h3><h4>"+venue_address+"</h4><h3>"+venue_category+"</h3></div><div style='width:40%;height:100%;float:left;'>Sample Text <input type='button'  id='"+venue_id+"' onclick='create_guide(this.id);'  value='Add Place' /></div></div></div>");
+
+          	                    }
+          	                  for(i = 0; i<venues.length ; i++){
+                                var venue_id = venues[i]['id'];
+                                var image_url = null;
+                                $.ajaxSetup({async:false});
+          	                    $.getJSON('https://api.foursquare.com/v2/venues/'+venues[i]['id']+'/photos?v=20140806&group=venue&oauth_token='+token,{}, function(data) {
+                                  if(data['response']['photos']['count'] != 0){
+  	  	                    			      image_url = data['response']['photos']['items'][0]["url"];
+                                        }
+  		  	              			});
+  		  	              			$("div#"+venues[i]['id']).children('div').eq(0).find('img').attr('src',image_url);
+  		  	              		}
+
+  	              });
+      session_id = '#{session[:user_id]}'
+      console.log(session_id)
+
+
+  	  $('#browse_by').change(function(){
+  	      addPageHeader();
+  	  });
+
+  	  /* Adding Dynamic Links to the Header */
+  	  $('.dynaLink').bind('click',function(event){
+             event.preventDefault();
+             $.get(this.href,{},function(response){
+                     $('#response').html(response)
+              })
+        })
+
+  });
+
+
+:javascript
+    /*$(function(){
+        var $container = $('#container');
+        $container.imagesLoaded( function(){
+          $container.masonry({
+          itemSelector : '.span3'
+        });
+      });
+    });*/
+
+  function changespan(val){
+    console.log(val);
+    class_val = $('#dynamic-span').attr('class');
+    console.log(class_val);
+    $('div.'+class_val).each(function(){
+      $(this).removeClass();
+      $(this).addClass('span'+val)
+
+
+    });
+
+  }
+
+  function addPageHeader(){
+            $('#page-header1').empty();
+          var token = 'DBHKFSCXVMRTB5HSZD3DU5ZMTZSXYVPIAACZMYJ3OBQ02CH2'
+            $.getJSON('https://api.foursquare.com/v2/venues/categories?v=20140806&oauth_token='+token,{}, function(data) {
+        	                    categories = data['response']['categories']
+
+        	                    for(i = 0; i<categories.length ; i++){
+        	                          $('#page-header1').append('<a   href="#" >'+categories[i]['name']+'</a><nbsp>');
+          	                    }
+        	  });
+
+
+  }
+  function addPageHeader2(){
+
+            $('#page-header1').empty();
+          var token = 'DBHKFSCXVMRTB5HSZD3DU5ZMTZSXYVPIAACZMYJ3OBQ02CH2'
+  	        $('#page-header1').empty();
+            $('#page-header1').append('<h1><a href="#" id="LatestLink" class="dynaLink" onclick="search_guide(\'latest\')">Latest</a>  <a href="#" id="MostPopular" class="dynaLink" onclick="search_guide(\'popular\')"> Most Popular</a>   <a href="#" id="HighestRated" class="dynaLink" onclick="search_guide(\'highrated\')">Highest Rated</a>   <a href="#" id="StressFactor" class="dynaLink" onclick="search_guide(\'stress\')">Stress Factor</a> </h1>')
+  	        //addPageHeaderGuide();
+
+
+  }
+
+  function search_guide(key){
+      $.ajax({
+                               // type : "GET",
+                                datatype: 'html',
+                                url: 'guides/search?key='+key,
+
+                               /* success: function(data) {
+                                $('#content-div').empty();
+  								jQuery('#content-div').html(data);
+                                },
+                                error : function() {
+                                         alert("Sorry, The requested property could not be found.");
+                                }*/
+                        }).done(function( html ) {
+                            $("#content-div").html("");
+                            $("#content-div").append(html);
+                          });
+
+  }
+
+
+  /*
+  //$('#browse').click(function(){
+  	  console.log("I am here")
+  	      var defaultBounds = new google.maps.LatLngBounds(
+                              new google.maps.LatLng(-33.8902, 151.1759),
+                              new google.maps.LatLng(-33.8474, 151.2631));
+          var input = document.getElementById('key_word');
+          var options = {
+              bounds: defaultBounds,
+              types: ['establishment']
+          };
+        console.log("here too")
+          autocomplete = new google.maps.places.Autocomplete(input);
+          console.log("also")
+          console.log(autocomplete);
+          /*google.maps.event.addListener(autocomplete, 'place_changed', function() {
+                infowindow.close();
+                var place = autocomplete.getPlace();
+                if (place.geometry.viewport) {
+                map.fitBounds(place.geometry.viewport);
+                } else {
+                map.setCenter(place.geometry.location);
+                map.setZoom(17); // Why 17? Because it looks good.
+                }
+                var image = new google.maps.MarkerImage(
+                place.icon,
+                new google.maps.Size(71, 71),
+                new google.maps.Point(0, 0),
+                new google.maps.Point(17, 34),
+                new google.maps.Size(35, 35));
+                marker.setIcon(image);
+                marker.setPosition(place.geometry.location);
+                var address = '';
+                if (place.address_components) {
+                address = [(place.address_components[0] &&
+                place.address_components[0].short_name || ''),
+                (place.address_components[1] &&
+                place.address_components[1].short_name || ''),
+                (place.address_components[2] &&
+                place.address_components[2].short_name || '')
+                ].join(' ');
+                }
+                infowindow.setContent('<div><strong>' + place.name + '</strong><br>' + address);
+                infowindow.open(map, marker);
+          });*/

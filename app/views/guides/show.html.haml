@@ -1,97 +1,276 @@
-#map{:style =>"width:300px;height:300px;padding:0 0 0 500px"}  
-= form_for(@location) do |f|
-  %table{:style=>'padding:100px 0 0 562px;'}
-    %tr
-      %td
-        = f.label :name
-      %td
-        =f.text_field :name
-    %tr
-      %td
-        = f.label :tags
-      %td
-        = f.text_field :tag
-    %tr
-      %td
-        = f.label "Why You Like this"
-      %td
-        = f.text_area :about, :columns => '30', :rows => '4'
-    %tr
-      %td
-        = f.label "longitude"
-      %td
-        = f.text_field :long, :value => @user.location
-    %tr
-      %td
-        = f.label "lattitude"
-      %td
-        = f.text_field :lat
-    %tr
-      %td
-      %td       
-        %input{:type => 'button', :value => 'Add Location', :id => 'add_location'}
+:css  
+  .hero-unit {
+        background-image :url(img/hero.png);
+        background-color :#FFF;
+        background-repeat:no-repeat;
+  }
+  .ui-autocomplete{
+      background-color :#d6d4d5 !important;
+      width: auto !important;
+      max-width: 568px;
+  }
+%link{:href => "../assets/ico/favicon.ico", :rel => "shortcut icon"}
+  %link{:href => "../assets/ico/apple-touch-icon-144-precomposed.png", :rel => "apple-touch-icon-precomposed", :sizes => "144x144"}
+    %link{:href => "../assets/ico/apple-touch-icon-114-precomposed.png", :rel => "apple-touch-icon-precomposed", :sizes => "114x114"}
+      %link{:href => "../assets/ico/apple-touch-icon-72-precomposed.png", :rel => "apple-touch-icon-precomposed", :sizes => "72x72"}
+        %link{:href => "../assets/ico/apple-touch-icon-57-precomposed.png", :rel => "apple-touch-icon-precomposed"}
+.hero-unit
+  %center
+    %h2
+      Create Guide
+    %p Add destinations to the guide
+.container
+  .span7.offset2
+    %form.well#content_form
+      %h3 
+        = @guide.title
+      %h6{:style => "padding-bottom: 10px;"} 
+        = @guide.category
+      .thumbnail
+        #map_canvas{:style =>"width:622px;height:200px;"}
+      %input#venue{:class => 'span6 validate[required]',:placeholder => "Add location", :style => "height: 30px;", :type => "text"}
+      =text_area_tag :location_about, nil, :rows => '3',:class => 'span6 input-xlarge validate[required]',:placeholder => "What do you like about it?"
+      #choose_image_row{:style => 'display:none'}        
+        Choose Image
+        #choose_image_column
+      =select_tag :location_category, options_for_select(@location_categories), :id => "location_category"
+      =hidden_field_tag :location_long
+      =hidden_field_tag :location_lat
+      =hidden_field_tag :location_four_square_id   
+      =hidden_field_tag :location_image   
+      %input{:type => 'button', :value => 'Add location', :id => 'add_location', :class => "btn btn-primary"} 
+      %input{:type => 'button', :value => 'Publish Guide',:id => 'publish', :class=>'btn btn-success'}
+      #loading{:style=> "position:absolute;opacity:1"}
+      - @guide.locations.each do |loc|
+        #data{:style=> "background-color:#EBE8EB;margin-top:2px;"}
+          .thumbnail.pull-left
+            =image_tag loc.foursquare_image_url, :style => "width:150px;height:100px;"
+          = link_to "X",'#', :onclick => "deleteLocation(#{loc.id.to_s});$(this).parent().remove()", :remote => true, :class=> "btn btn-danger pull-right"
+          %h4
+            = loc.name
+          %h6
+            = loc.category
+          %p
+            = loc.why_i_like
+          %div{:style=>"clear:both"}
+            
+      
+%script{:src => "js/jquery.js"}
+%script{:src => "js/bootstrap-transition.js"}
+%script{:src => "js/bootstrap-alert.js"}
+%script{:src => "js/bootstrap-modal.js"}
+%script{:src => "js/bootstrap-dropdown.js"}
+%script{:src => "js/bootstrap-scrollspy.js"}
+%script{:src => "js/bootstrap-tab.js"}
+%script{:src => "js/bootstrap-tooltip.js"}
+%script{:src => "js/bootstrap-popover.js"}
+%script{:src => "js/bootstrap-button.js"}
+%script{:src => "js/bootstrap-collapse.js"}
+%script{:src => "js/bootstrap-carousel.js"}
+%script{:src => "js/bootstrap-typeahead.js"}
+=javascript_include_tag "jquery.validationEngine-en.js","jquery.validationEngine.js","http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.9/jquery-ui.js"
+=stylesheet_link_tag "validationEngine.jquery.css"
 
 
 :javascript
-  $('document').ready(function(){
-    init();
-  	$("#add_location").click(function(){
-  				alert($("#location_name").val());
+  
+  function deleteLocation(location_id){
+      $.ajax({type:"post", 
+                url:'/locations/delete?id='+location_id,
+                datatype: 'text',
+                success: function(){
+                  
+                }
+        }); 
+  
+  }
+  $('document').ready(function(){    
+    titleName = "";
+    $("#publish").click(function(e){
+        e.preventDefault();
+        id = '#{@guide.id}'
+        $.ajax({type:"post", 
+                url:'/guides/publish_guide?id='+id,
+                datatype: 'text',
+                success: function(data){
+                  window.location.href = "/";
+                }
+        });
+    });
+          var lat = #{@guide.lat};
+          var lng = #{@guide.lng};
+          var myOptions = {
+            zoom: 14,
+            center: new google.maps.LatLng(lat, lng),
+            mapTypeId: google.maps.MapTypeId.ROADMAP
+          };
+          var map = new google.maps.Map(document.getElementById('map_canvas'),  myOptions);
+          // Add Marker Manager
+          var geodesic = new google.maps.Polyline({geodesic: true});
+          var path = geodesic.getPath();
+          //var mgrOptions = { borderPadding: 50, maxZoom: 15, trackMarkers: true };          
+          //mgr = new google.maps.MarkerManager(map,mgrOptions);
+          // Query foursquare API for venue recommendations near the current location. 
+          token = 'DBHKFSCXVMRTB5HSZD3DU5ZMTZSXYVPIAACZMYJ3OBQ02CH2'    
+          $( "#venue" ).autocomplete({
+              source: function( request, response ) {
+                  var search_key = $('#venue').val();
+  	              $.ajax({
+  				            url: 'https://api.foursquare.com/v2/venues/suggestCompletion?v=20140806&limit=10&ll=' + lat + ',' + lng +'&query='+$('#venue').val()+ '&oauth_token=' + token,
+  				            dataType: "jsonp",
+  				            data: {
+  					              featureClass: "P",
+  					              style: "full",
+  					              maxRows: 12,
+  					              name_startsWith: request.term
+  				            },
+  				            success: function( data ) {  				                  
+  				                  data = data['response']['minivenues']
+  					                response( $.map( data, function( item ) {
+  						                return {
+  							                  label: item.name +(item.location.address ? ", " + item.location.address : ""), 
+  							                  value: item.name,
+  							                  lng: item.location.lng,
+    							                lat: item.location.lat,
+    							                foursquare_id: item.id
+  						                }
+  					                }));
+  				            }
+  			         });
+  		        },
+  		        minLength: 2,
+  		        select: function( event, ui ) {
+  		            titleName = ui.item.value;
+                  $("#location_four_square_id").val(ui.item.foursquare_id);
+                  $("#location_lat").val(ui.item.lat);
+                  $("#location_long").val(ui.item.lng);
+                  
+                $.getJSON('https://api.foursquare.com/v2/venues/'+$("#location_four_square_id").val()+'/photos?v=20140806&group=venue&oauth_token='+token,{}, function(data) {
+  	                    //console.log(data['response']['photos'])
+  	                    var image = data['response']['photos']['items']
+  	                    $('#choose_image_row').show();
+  	                    $('#choose_image_column').empty();
+  	                    for(i = 0;i<image.length;i++)
+  	                    {
+  	                        if(i<5){
+  	                        var image_url = image[i]["prefix"]+"70x70"+image[i]["suffix"];
+  	                        //console.log(image_url)
+  	                        $(document.createElement("img"))
+                                    .attr({ src:image[i]["prefix"]+"70x70"+image[i]["suffix"] , title: 'select your choice ', style: 'width:80px;height:80px;cursor:pointer; padding:5px;', class: 'imagePicker', id:image[i]["prefix"]+"70x70"+image[i]["suffix"] })                                    
+                                    .appendTo($("#choose_image_column"));
+                             $("#choose_image_column").append("<nbsp></nbsp>");
+                                
+  	                        } 	                           
+  	                    }
+                        
+  		                  $('img.imagePicker').click(function(){
+  		                            var image_url = $(this).attr('id');
+                                  $("#location_image").val(image_url);
+                         })
+  	              }); 
+  		        },
+  		        open: function() {
+  			            $( this ).removeClass( "ui-corner-all" ).addClass( "ui-corner-top" );
+  		        },
+  		        close: function() {
+  			            $( this ).removeClass( "ui-corner-top" ).addClass( "ui-corner-all" );
+  		        }
+       });    
+    
+  
+   
+    
+  	$("#add_location").click(function(){  	
+  	      if($("#venue").val() == '' && $("#location_about").val() == ''){
+  	        //$("#venue_error").remove();
+  	        //$("#about_error").remove();
+  	        //$("#venue").append('<span id="venue_error"  style="color:red" >* This field is required</div>');
+  	        //$("#location_about").append('<span id="about_error"  style="color:red" >* This field is required</span>');
+            alert("Please Add Location.\n Please tell us what you like about it.");
+  	        return false;
+  	      }      	        
+  	      if($("#location_about").val() == ''){
+  	        //$("#about_error").remove();
+  	        //$("#location_about").append('<span id="about_error" style="color:red" >* This field is required</span>');
+            alert("Please tell us what you like about it.");
+  	        return false;
+  	      }
+  	      if($("#venue").val() == ''){
+  	       // $("#venue_error").remove();
+  	        //$("#venue").append('<span id="venue_error" style="color:red" >* This field is required</span>');
+            alert("Please Add Location.");
+  	        return false;
+  	      }
+          $('#loading').html('<img src="/assets/spinner.png" style="width:100px"> loading...');
   				$.ajax({
                                // type : "GET",
                                 datatype: 'html',
-                                url: '/guides/location_create?name='+$("#location_name").val()+'&tag='+$("#location_tags").val()+'&about='+$("#location_about").val()+'&long='+$("#location_long").val()+'&lat='+$("#location_lat").val()+"&guide_id=#{@guide.id}",
-                               /* success: function(data) {
-                                $('#content-div').empty();
-                                alert(data);
-                                console.log("Im here");
-                                console.log(data);
-  								jQuery('#content-div').html(data);
+                                url: '/guides/location_create?name='+$("#venue").val()+'&tag='+$("#location_tag").val()+'&about='+$("#location_about").val()+'&long='+$("#location_long").val()+'&lat='+$("#location_lat").val()+"&guide_id=#{@guide.id}&category="+$("#location_category").val()+"&foursquare_id="+$("#location_four_square_id").val()+"&image="+$('#location_image').val(),
+                                success: function(data) {
+                                  
+                                 
+                                  marker_id = #{@guide.locations.length}  		            
+                                  switch(marker_id)
+                                {
+                                      case 0:
+                                        image_url = "http://i.imgur.com/Aquit.png"
+                                        break;
+                                      case 1:
+                                        image_url = "http://i.imgur.com/Yd3Vk.png"
+                                        break;
+                                      case 2:
+                                        image_url = "http://i.imgur.com/7dXVu.png"
+                                        break;
+                                      case 3:
+                                        image_url = "http://i.imgur.com/oXSO1.png"
+                                        break;
+                                      case 4:
+                                        image_url = "http://i.imgur.com/n56IU.png"
+                                        break;
+                                      case 5:
+                                        image_url = "http://i.imgur.com/plOUM.png"
+                                        break;
+                                      case 6:
+                                        image_url = "http://i.imgur.com/JX8JN.png"
+                                        break;
+                                      case 7:
+                                        image_url = "http://i.imgur.com/GUMDT.png"
+                                        break;
+                                      case 8:
+                                        image_url = "http://i.imgur.com/TGwLF.png"
+                                        break;
+                                      case 9:
+                                        image_url = "http://i.imgur.com/VaYnu.png"
+                                        break;
+                                      default:
+                                        image_url = "http://i.imgur.com/Aquit.png"
+                                        break;
+                                }
+                                var marker = new google.maps.Marker({
+                                  position: new google.maps.LatLng($("#location_lat").val(), $("#location_long").val()),
+                                  map: map,
+                                  icon: image_url,
+                                  title: titleName
+                                });
+                                marker.setMap(map);
+                                  $("#venue").val('');
+                                  $("#location_tags").val('');
+                                  $("#location_about").val('');
+                                  $("#location_long").val('');
+                                  $("#location_lat").val('')
+                                  $("#location_four_square_id").val("");
+                                  $("#location_category").val('');
+                                  $("#location_image").val("");
+                                  $("#choose_image_column").empty(); 
+                                 
                                 },
                                 error : function() {
                                          alert("Sorry, The requested property could not be found.");
-                                }*/
+                                }
                         }).done(function( html ) {
-                            $("#content-div").html("");
-                            $("#content-div").append(html);
+                            $("#content_form").append($(html));
+                            $('#loading').html('');
                           });
   					});
-  					});
-  	
-
-  var centerLatitude = 37.4419; 
-  var centerLongitude = -122.1419; var startZoom = 12;
-  var map;  
-  function init() { if (GBrowserIsCompatible()) {
-    map = new GMap2(document.getElementById("map")); 
-    map.addControl(new GSmallMapControl()); 
-    map.addControl(new GMapTypeControl());  
-    map.setCenter(new GLatLng(centerLatitude, centerLongitude), startZoom);
-    //	allow the user to click the map to create a marker 
-    GEvent.addListener(map, "click", function(overlay, latlng) { 
-     	//create an HTML DOM form element 
-    	//var inputForm = document.createElement("form"); 
-    	//inputForm.setAttribute("action",""); 
-    	//inputForm.onsubmit = function() {createMarker(); return false;};
-    	//retrieve the longitude and lattitude of the click point 
-  		var lng = latlng.lng(); 
-  		var lat = latlng.lat();
-        document.getElementById('location_long').value = lng;
-  		document.getElementById('location_lat').value = lng;   		
-    	/*inputForm.innerHTML = '<fieldset style="width:150px;">' + 
-                              '<legend>New Marker</legend>' + 
-                               '<label for="found">Found</label>'   
-                               +'<input type="text" id="found" name="m[found]" style="width:100%;"/>' + 
-                               '<label for="left">Left</label>'+ 
-                               '<input type="text" id="left" name="m[left]" style="width:100%;"/>' + 
-                               '<input type="submit" value="Save"/>' + 
-                               '<input type="hidden" id="longitude" name="m[lng]" value="'+ lng +'"/>' + 
-                               '<input type="hidden" id="latitude" name="m[lat]" value="' + lat + '"/>' + '</fieldset>';*/
-        var marker = new GMarker(latlng) 
-  	    map.removeOverlay(marker);
-        map.addOverlay(marker);
-
-   	  	//map.openInfoWindow (latlng,inputForm);
-    });
-    }
-    }
+      });          
+    

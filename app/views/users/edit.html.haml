@@ -27,7 +27,7 @@
       %td
         - name = @user.name
         = f.text_field :name,:value => name
-        So Your friends can find you
+        %span.label.warning So Your friends can find you
     %tr
       %td
         = f.label :email
@@ -65,4 +65,5 @@
     %tr
       %td
       %td
-        = f.submit
+        %btn.btn.btn-primary
+          = f.submit

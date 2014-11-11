@@ -31,10 +31,11 @@ gem 'jquery-rails'
 #gem 'eventmachine'
 
 group :development, :test do
-  gem 'mysql2'
+  #gem 'mysql2'
+  #gem 'sqlite3'
 end
 group :production do
-  #gem 'pg'
+  gem 'pg'
   #gem 'activerecord-postgresql-adapter'
 end
 

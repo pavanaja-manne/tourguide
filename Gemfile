@@ -38,7 +38,7 @@ group :production do
   gem 'pg'
   #gem 'activerecord-postgresql-adapter'
 end
-gem 'sass'
+#gem 'sass'
 # To use ActiveModel has_secure_password
 # gem 'bcrypt-ruby', '~> 3.0.0'
 

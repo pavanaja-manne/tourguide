@@ -132,6 +132,5 @@ DEPENDENCIES
   omniauth-facebook
   pg
   rails (= 3.2.2)
-  sass
   sass-rails (~> 3.2.3)
   uglifier (>= 1.0.3)

@@ -6,7 +6,7 @@ class UsersController < ApplicationController
     else
       @user = User.find(params[:user_id])
     end
-    @guides = Guide.where(:user_id => @user.id,:publish => true).order("CREATED_AT DESC")
+    @guides = Guide.where(:user_id => @user.id).order("CREATED_AT DESC")
     puts "guides"
     puts @guides
   end

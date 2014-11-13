@@ -40,7 +40,7 @@
                 %td{:style =>"font-family: 'Georgia', sans-serif; font-weight:normal;font-style:italic;"}= location.why_i_like
                 %td= location.category
                 %td
-                  %button.saveguide{:type => "submit" } + Add to guide
+                  =#%button.saveguide{:type => "submit" } + Add to guide
           -@length = @mkr['lat'].length
 
 
@@ -102,8 +102,7 @@
                           }
                       });
           for(i=0;i<len;i++)
-          {
-                console.log("inside for loop")
+          {                
                 switch(i)
                 {
                       case 0:
@@ -147,12 +146,6 @@
                             icon: image_url
                         });
                marker.setMap(map);
-               
-               
-                     
-                     
-          
-              
   		     }       
           });
     

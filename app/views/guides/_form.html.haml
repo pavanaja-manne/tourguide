@@ -60,4 +60,32 @@
                    initialize();
                    $('form').validationEngine('attach', {promptPosition : "centerLeft", scroll: false});
              });
-             google.maps.event.addDomListener(window, 'load', initialize);
+             google.maps.event.addDomListener(window, 'load', initialize);             
+             directionsDisplay.setMap(map);
+            var len = parseInt('#{@length}')
+            lats = #{@mkr["lat"]}
+            lngs = #{@mkr["lng"]}
+            names = #{@mkr["name"]};
+            var waypts = [];
+            if(len > 2){
+                  for(i = 0;i<len;i++){
+                    waypts.push({
+                        location:new google.maps.LatLng(lats[i], lngs[i]),
+                        stopover:true
+                    })
+                  }
+            }
+            var request = {
+                          origin:new google.maps.LatLng(lats[0], lngs[0]),
+                          destination:new google.maps.LatLng(lats[len-1], lngs[len-1]),
+                          waypoints: waypts,
+                          optimizeWaypoints: true,
+                          travelMode: google.maps.TravelMode.DRIVING
+            };
+            directionsService.route(request, function(result, status) {
+                if (status == google.maps.DirectionsStatus.OK) {
+                    directionsDisplay.setDirections(result);
+                }
+            });
+             
+             

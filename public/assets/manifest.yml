@@ -63,6 +63,6 @@ ui-icons_888888_256x240.png: ui-icons_888888_256x240-2367be3b849658b02806501900c
 ui-icons_cd0a0a_256x240.png: ui-icons_cd0a0a_256x240-28198ae9c8f4bf69bc280c020d13a0c7.png
 ui-icons_f6cf3b_256x240.png: ui-icons_f6cf3b_256x240-647b1ec133f150b2eb0b0494d76b0065.png
 application.js: application-990b7fae7027847e0e9b764c2749549a.js
+thickbox.js: thickbox-6514b3f769f6529df2f31b36574cdd3e.js
 application.css: application-2db105d6709793f197c8068df5f75b5f.css
-bootstrap.css: bootstrap-e3c328e7f7e013f0eb829100c4d9b9a3.css
 jquery.min.map: jquery.min-d93a81e507ba322a0f516e145a74d86d.map

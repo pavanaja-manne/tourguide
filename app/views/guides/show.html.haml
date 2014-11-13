@@ -107,7 +107,8 @@
             center: new google.maps.LatLng(lat, lng),
             mapTypeId: google.maps.MapTypeId.ROADMAP
           };
-          var directionDisplay;
+          directionsDisplay = new google.maps.DirectionsRenderer();
+          directionsDisplay.suppressMarkers = true;
           var directionsService = new google.maps.DirectionsService();
           var map = new google.maps.Map(document.getElementById('map_canvas'),  myOptions);
           // Add Marker Manager

@@ -7,7 +7,7 @@
     %meta{:content => "", :name => "description"}
     %meta{:content => "", :name => "author"}
     %meta{:content => "yes", :name => "apple-mobile-web-app-capable"}
-    = javascript_include_tag 'application.js','http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js'
+    = javascript_include_tag 'application.js','https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js'
     %link{:charset => "utf-8", :href => "/css/apercu.css", :rel => "stylesheet", :type => "text/css"}
     %link{:href => "/assets/doinaday_icon.png", :rel => "apple-touch-icon"}
     = csrf_meta_tags
@@ -51,8 +51,8 @@
             Create your own tour guide and explore others too.
           %p
             =link_to image_tag('facebook_btn.png'), "/auth/facebook"
-    = javascript_include_tag 'http://maps.googleapis.com/maps/api/js?key=AIzaSyARDa-zSGZaZpd_U05Qxu4tkqRHJg6Vieg&libraries=geometry,places&sensor=false','http://www.google.com/jsapi?key=AIzaSyARDa-zSGZaZpd_U05Qxu4tkqRHJg6Vieg'
-    = javascript_include_tag "application", "http://html5shim.googlecode.com/svn/trunk/html5.js"
+    = javascript_include_tag 'https://maps.googleapis.com/maps/api/js?key=AIzaSyARDa-zSGZaZpd_U05Qxu4tkqRHJg6Vieg&libraries=geometry,places&sensor=false','https://www.google.com/jsapi?key=AIzaSyARDa-zSGZaZpd_U05Qxu4tkqRHJg6Vieg'
+    = javascript_include_tag "application", "https://html5shim.googlecode.com/svn/trunk/html5.js"
     = stylesheet_link_tag "application","bootstrap"
     = yield
     .container

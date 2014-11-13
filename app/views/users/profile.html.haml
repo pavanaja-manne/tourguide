@@ -76,7 +76,7 @@
                 = guide.category
           - if (@user.uid == session[:user_id])
             = link_to content_tag(:i, "", class: "icon-trash icon-white") + "Delete", '/guides/delete?id='+guide.id.to_s,method: :delete, :remote => true, :onclick => "$(this).parent().parent().empty()", class: "btn btn-primary remove_fields", :style=>'float:right'
-            = link_to content_tag(:i, "", class: "icon-trash icon-white") + "Edit", edit_guide_path(guide), class: "btn btn-primary remove_fields", :style=>'float:right'
+            = link_to content_tag(:i, "", class: "icon-trash icon-white") + "Edit", guide_path(guide), class: "btn btn-primary remove_fields", :style=>'float:right'
 :javascript
   $(document).ready(function(){
       var followers_cnt = 0

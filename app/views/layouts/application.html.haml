@@ -17,7 +17,7 @@
     %div{:style => "clear:both"}
     .navbar
       .navbar-inner
-        .container
+        .container{:style => "background-color:white"}
           .span3
           %a.btn.btn-navbar{"data-target" => ".nav-collapse", "data-toggle" => "collapse"}
             %span.icon-bar
@@ -37,12 +37,12 @@
                   /name_path(@user,:id => @user.id)
                   %a{"data-toggle" => "dropdown", :href =>'/users/profile?user_id='+@user.id.to_s , :method => 'post'}
                     = image_tag(@user.img,:style => "float:left; margin-top:0px; margin-top:10px; border-radius: 35px;", :size => '25x25')
-                  %a.userlogedin{:style => "float:left;", :href =>'/users/profile?user_id='+@user.id.to_s , :method => 'post'}
+                  %a.userlogedin{:style => "float:left;color:black;", :href =>'/users/profile?user_id='+@user.id.to_s , :method => 'post'}
                     = @user.name
                   .userlogout{:style=> "color:red !important;"}
                     = link_to "Logout", "/sessions/destroy", :style => "color:red;font-size:14px"
               %li
-                = link_to "Create Guide", new_guide_path
+                = link_to "Create Guide", new_guide_path, :style => "color:black"
       - if session[:user_id].blank?
         .signup-container{:style => "position:relative !important;"}
           %h1
@@ -110,16 +110,26 @@
                               lng = place['geometry']['location'].lng();
                   });
   }
+  
+  
+  function viewFoursquareDetails(fid){
+      
+  
+  
+  }
+  
+  
+  
   $("#location_search").click(function(){
                 $('#guide_container').html('');
                 latlng = lat+ ","+lng;
                 var token = 'DBHKFSCXVMRTB5HSZD3DU5ZMTZSXYVPIAACZMYJ3OBQ02CH2';
              	$.getJSON('https://api.foursquare.com/v2/venues/trending?ll='+latlng+'&oauth_token='+token+'&v=20130222',{}, function(data) {                  
-  	                    var venues = data['response']['venues'];
+  	                    venues = data['response']['venues'];
   	                    if(venues == null || venues == '')
   	                    {
                               $.getJSON('https://api.foursquare.com/v2/venues/search?ll='+lat+','+lng+'&oauth_token='+token+'&v=20130222',{}, function(data) {
-  	                    			var venues = data['response']['venues'];
+  	                    			venues = data['response']['venues'];
   	                    			for(var i = 0; i<venues.length ; i++){
   	                    				var venue_name = venues[i]['name'];
   	                    				var venue_address = venues[i]['location']['address'];
@@ -127,11 +137,13 @@
   	                    				var venue_id = venues[i]['id'];
                                     	var image_url = '';
                                     	$.ajaxSetup({async:false});
+                                      $('#guide_container').append("<div class='span3 cards'><div class='guidemaker' id='"+venue_id+"' style='color:#000 !important;background-color:#F9FBFC;' ><div style='float:left;'><img id='"+venue_id+"'  style='width:80px;height:80px;cursor:pointer; padding:5px;' onclick='viewFoursquareDetails(this.id)'  src='/assets/default.png'></img><p>"+venue_name+"</p><h6>"+venue_category+"</h6><p style='color: #BBBBBB;font-weight:bold; font-size: 11px; padding-left: 10px;'><img height='14' src='/assets/pin.png'>"+(venue_address || "")+"</p></div><!--<div style='width:40%;float:left;'> <input type='button'  id='"+venue_id+"' onclick='create_guide(this.id);'  value='Add Place' /></div>--></div></div>");
           	                    		$.getJSON('https://api.foursquare.com/v2/venues/'+venues[i]['id']+'/photos?group=venue&v=20130222&oauth_token='+token,{}, function(data) {
                                     if(data['response']['photos']['count'] != 0){
-  	  	                    				      image_url = data['response']['photos']['items'][0]["url"];
+                                          image = data['response']['photos']['items'][0];  
+  	  	                    				      image_url = image["prefix"]+"70x70"+image["suffix"];
+                                          $("img#"+venues[i]['id']).attr('src',image_url);
                                           }
-                                    $('#guide_container').append("<div class='span4'><div class='guidemaker' id='"+venue_id+"' style='color:#000 !important;background-color:#F9FBFC;width:100%;height:160px;' ><div style='width:45%;height:100%;float:left;'><img id='"+venue_id+"' src='"+image_url+"' style='width:80px;height:80px;cursor:pointer; padding:5px;'></img><h3>"+venue_name+"</h3><h4>"+venue_address+"</h4><h3>"+venue_category+"</h3></div><div style='width:40%;height:100%;float:left;'> <input type='button'  id='"+venue_id+"' onclick='create_guide(this.id);'  value='Add Place' /></div></div></div>");
   		  	              				});
                                     	
           	                    	}
@@ -143,7 +155,9 @@
                                 		$.ajaxSetup({async:false});
           	                    		$.getJSON('https://api.foursquare.com/v2/venues/'+venues[i]['id']+'/photos?group=venue&v=20130222&oauth_token='+token,{}, function(data) {
                                     if(data['response']['photos']['count'] != 0){
-  	  	                    				      image_url = data['response']['photos']['items'][0]["url"];
+  	  	                    				      image = data['response']['photos']['items'][0];  
+  	  	                    				      image_url = image["prefix"]+"70x70"+image["suffix"];
+                                          $("img#"+venues[i]['id']).attr('src',image_url);
                                           }
   		  	              				});
   		  	              				$("div#"+venues[i]['id']).children('div').eq(0).find('img').attr('src',image_url);
@@ -159,7 +173,7 @@
   	                    			var venue_category = venues[i]['categories'][0]['name'];
   	                    			var venue_id = venues[i]['id'];
                                     var image_url = '';
-                                    $('#guide_container').append("<div class='span4'><div class='guidemaker' id='"+venue_id+"' style='color:#000 !important;background-color:#F9FBFC;width:100%;height:160px;' ><div style='width:45%;height:100%;float:left;'><img id='"+venue_id+"'  style='width:80px;height:80px;cursor:pointer; padding:5px;'></img><h3>"+venue_name+"</h3><h4>"+venue_address+"</h4><h3>"+venue_category+"</h3></div><div style='width:40%;height:100%;float:left;'>Sample Text <input type='button'  id='"+venue_id+"' onclick='create_guide(this.id);'  value='Add Place' /></div></div></div>");
+                                    $('#guide_container').append("<div class='span4'><div class='guidemaker' id='"+venue_id+"' style='color:#000 !important;background-color:#F9FBFC;width:100%;height:160px;' ><div style='height:100%;float:left;'><img id='"+venue_id+"'  style='width:80px;height:80px;cursor:pointer; padding:5px;' src='/assets/default.png' onclick='viewFoursquareDetails(this.id)'></img><h3>"+venue_name+"</h3><h6>"+venue_category+"</h6><p style='color: #BBBBBB;font-weight:bold; font-size: 11px; padding-left: 10px;'><img height='14' src='/assets/pin.png'>"+(venue_address || "")+"</p></div><!--<div style='width:40%;height:100%;float:left;'> <input type='button'  id='"+venue_id+"' onclick='create_guide(this.id);'  value='Add Place' /></div>--></div></div>");
 
           	                    }
           	                  for(i = 0; i<venues.length ; i++){
@@ -168,7 +182,9 @@
                                 $.ajaxSetup({async:false});
           	                    $.getJSON('https://api.foursquare.com/v2/venues/'+venues[i]['id']+'/photos?group=venue&v=20130222&oauth_token='+token,{}, function(data) {
                                   if(data['response']['photos']['count'] != 0){
-  	  	                    			    image_url = data['response']['photos']['items'][0]["url"];
+  	  	                    			    image = data['response']['photos']['items'][0];  
+  	  	                    				      image_url = image["prefix"]+"70x70"+image["suffix"];
+                                          $("img#"+venues[i]['id']).attr('src',image_url);
                                       }
   		  	              			});
   		  	              			$("div#"+venues[i]['id']).children('div').eq(0).find('img').attr('src',image_url);

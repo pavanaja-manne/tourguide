@@ -1,16 +1,19 @@
+
+%script{ :src=>"http://code.jquery.com/ui/1.10.4/jquery-ui.js"}
+%script
+  $(function() {
+  $( "#accordian1" ).accordion();    });
 .container
   .row
     .span.offset4
       %div.form-search
         %input#key_word.input-small.search-query{:name => "city_search", :placeholder => "Search a City", :style => "float:left; border-radius:30px 30px 30px 30px;size:36px;height:30px; margin:10px; padding-left:20px;width:175px;", :type => "text"}/
         %button.span1.btn.btn-large.btn-block.btn-primary#location_search{:style => "float:right; margin: 10px;", :type => "buttton"} Search
-  .container
+  .container#accordian1
     .row
       .span4{:style => "padding:20px;"}
-        %img{:style => "float:left;padding-right:10px;", :src => "assets/pin_lrg.png"}
+        %img{:style => "float:left;padding-right:10px;cursor:pointer;", :src => "/assets/pin_lrg.png", :onclick => "$(this).parent().parent().next().toggle()"}
           %h2 Top Places
-      %h3{:style => "padding:20px;font-family:'helvetica',arial,sans-serif; font-size:14px;float:right;font-weight:normal;"}
-        %a See all
     .span12
       - i = 0
       - @guides.each do |guide|
@@ -29,9 +32,9 @@
             %a{:href => '/guides/display?height=600&width=800&id='+guide.id.to_s, }
               = guide.title
           %p{:style => "color: #BBBBBB;font-weight:bold; font-size: 11px; padding-left: 10px;"}
-            %img{:height => "14", :src => "assets/pin.png"}/
+            %img{:height => "14", :src => "/assets/pin.png"}/
             = guide.city
-            %button.saveguide{:type => "submit" } + Add this guide
+            -#%button.saveguide{:type => "submit" } + Add this guide
         - i += 1
         - if i%4 == 0
           %br
@@ -41,10 +44,8 @@
   .container{:style => "background-color:#ffffff;"}
     .row
       .span4{:style => "padding:20px;"}
-        %img{:style => "float:left;padding-right:10px;", :src => "assets/map.png"}
+        %img{:style => "float:left;padding-right:10px;cursor:pointer;", :src => "/assets/map.png", :onclick => "$(this).parent().parent().next().toggle()"}
           %h2 Popular Guides
-      %h3{:style => "padding:20px;font-family:'helvetica',arial,sans-serif; font-size:14px;float:right;font-weight:normal;"}
-        %a See all
     .span12
       - i = 0
       - @guides.each do |guide|
@@ -66,7 +67,7 @@
           .tagline
             = guide.tag_line
           %p{:style => "color: #BBBBBB;font-weight:bold; font-size: 11px; padding-left: 10px;"}
-            %img{:height => "14", :src => "assets/pin.png"}/
+            %img{:height => "14", :src => "/assets/pin.png"}/
             = guide.city
             
         - i += 1
@@ -75,8 +76,12 @@
           .span3
           %button.span9.btn.btn-large.btn-block.btn-more.offset1{:type => "button", :style => "margin-bottom:20px;",} More Guides
 
-.nav-collapse
+.nav-collapse{:style => "border-top:1px solid #e5e5e5"}
   .container
+    .row
+      .span4{:style => "padding:20px;"}
+        %img{:style => "float:left;padding-right:10px;cursor:pointer;", :src => "/assets/trend.png", :onclick => "$(this).parent().parent().next().toggle()"}
+          %h2 Local Trendings
     .span12#guide_container
 
 .nav-collapse{:style=>'background-color:#E9E9E9;border:1px solid #000;'}
@@ -107,9 +112,20 @@
 .footer.modal-footer{:style =>"height:10px;clear:both;position:fixed;bottom:0px;"}
   #fb-root
   .fb-like{"data-send" => "true", "data-show-faces" => "true", "data-width" => "450"}
-</script>
+#content_display.thickbox
+%a.btn{"data-toggle" => "modal", :href => "#myModal", :role => "button"} Launch demo modal
+/ Modal
+#myModal.modal.hide.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", :role => "dialog", :tabindex => "-1"}
+  .modal-header
+    %button.close{"aria-hidden" => "true", "data-dismiss" => "modal", :type => "button"} ×
+    %h3#myModalLabel Modal header
+  .modal-body
+    %p One fine body…
+  .modal-footer
+    %button.btn{"aria-hidden" => "true", "data-dismiss" => "modal"} Close
+    %button.btn.btn-primary Save changes
 :javascript
-  
+  $('#myModal').modal('show')
   (function(d, s, id) {   var js, fjs = d.getElementsByTagName(s)[0];      if (d.getElementById(id)) return;
       js = d.createElement(s); js.id = id;
       js.src = "//connect.facebook.net/en_GB/all.js#xfbml=1&appId=206096812769730";
@@ -123,7 +139,7 @@
               return false;
             }
       	    var token = 'DBHKFSCXVMRTB5HSZD3DU5ZMTZSXYVPIAACZMYJ3OBQ02CH2';
-      	$.getJSON('https://api.foursquare.com/v2/venues/'+id+'?group=venue&oauth_token='+token,{}, function(data) {
+      	$.getJSON('https://api.foursquare.com/v2/venues/'+id+'?group=venue&v=20140806&oauth_token='+token,{}, function(data) {
         	    resp = data['response']['venue']['name'];
               var image_url = $("div#"+id).find('img').attr('src')
               var venue_name = data['response']['venue']['name'];
@@ -195,27 +211,30 @@
     lat = lat.toFixed(2)
   long = long.toFixed(2)
        $.getJSON('https://api.foursquare.com/v2/venues/trending?v=20140806&ll='+lat+','+long+'&oauth_token='+token,{}, function(data) {
-
   	                    var venues = data['response']['venues'];
+                        $('#guide_container').append("<div class='row'>");
   	                    for(i = 0; i<venues.length ; i++){
-  	                    			var venue_name = venues[i]['name'];
-  	                    			var venue_address = venues[i]['location']['address'];
-  	                    			var venue_category = venues[i]['categories'][0]['name'];
-  	                    			var venue_id = venues[i]['id'];
+                                    var venue_name = venues[i]['name'];
+                                    var venue_address = venues[i]['location']['address'];
+                                    var venue_category = venues[i]['categories'][0]['name'];
+                                    var venue_id = venues[i]['id'];
                                     var image_url = '';
-                                    $('#guide_container').append("<div class='span4'><div class='guidemaker' id='"+venue_id+"' style='color:#000 !important;background-color:#F9FBFC;width:100%;height:160px;' ><div style='width:45%;height:100%;float:left;'><img id='"+venue_id+"'  style='width:80px;height:80px;cursor:pointer; padding:5px;'></img><h3>"+venue_name+"</h3><h4>"+venue_address+"</h4><h3>"+venue_category+"</h3></div><div style='width:40%;height:100%;float:left;'>Sample Text <input type='button'  id='"+venue_id+"' onclick='create_guide(this.id);'  value='Add Place' /></div></div></div>");
-
+                                    $('#guide_container').append("<div class='span3 cards'><div class='guidemaker' id='"+venue_id+"' style='color:#000 !important;background-color:#F9FBFC;' ><div style='width:45%;float:left;'><img id='"+venue_id+"'  style='width:80px;height:80px;cursor:pointer; padding:5px;' src='/assets/default.png' onclick='viewFoursquareDetails(this.id)'></img><p>"+venue_name+"</p><p style='color: #BBBBBB;font-weight:bold; font-size: 11px; padding-left: 10px;'><img height='14' src='/assets/pin.png'>"+(venue_address || "")+"</p></div><!--<div style='width:40%;float:left;'> <input type='button'  id='"+venue_id+"' onclick='create_guide(this.id);'  value='Add Place' /></div>--></div></div>");
+                                    
           	                    }
+                                
           	                  for(i = 0; i<venues.length ; i++){
                                 var venue_id = venues[i]['id'];
                                 var image_url = null;
                                 $.ajaxSetup({async:false});
           	                    $.getJSON('https://api.foursquare.com/v2/venues/'+venues[i]['id']+'/photos?v=20140806&group=venue&oauth_token='+token,{}, function(data) {
                                   if(data['response']['photos']['count'] != 0){
-  	  	                    			      image_url = data['response']['photos']['items'][0]["url"];
+                                        image = data['response']['photos']['items'][0];                                        
+  	  	                    			      image_url = image["prefix"]+"70x70"+image["suffix"];
+                                        $("img#"+venues[i]['id']).attr('src',image_url);
                                         }
   		  	              			});
-  		  	              			$("div#"+venues[i]['id']).children('div').eq(0).find('img').attr('src',image_url);
+  		  	              			//$("div#"+venues[i]['id']).children('div').eq(0).find('img').attr('src',image_url);
   		  	              		}
 
   	              });
@@ -260,6 +279,8 @@
     });
 
   }
+  
+  
 
   function addPageHeader(){
             $('#page-header1').empty();
@@ -302,7 +323,6 @@
                             $("#content-div").html("");
                             $("#content-div").append(html);
                           });
-
   }
 
 

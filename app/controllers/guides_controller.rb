@@ -174,6 +174,7 @@ class GuidesController < ApplicationController
     @guide = Guide.find(params[:id].to_i)
     @guide.publish = true
     @guide.save
+    UpdateEmail.followerNews("raghava.sangars@gmail.com").deliver
     render :text => "success"
   end
 

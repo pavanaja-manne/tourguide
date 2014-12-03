@@ -32,11 +32,11 @@ TourGuide::Application.configure do
   # Do not compress assets
   config.assets.compress = false
   
-  config.action_mailer.default_url_options = { host: "tour-guide.herokuapp.com" }
+  #config.action_mailer.default_url_options = { host: "tour-guide.herokuapp.com" }
   config.action_mailer.raise_delivery_errors = true
   config.action_mailer.delivery_method = :smtp
   config.action_mailer.smtp_settings = {
-    address: "smtp.gmail.com",
+    address: "smtp.gmail.com",git add 
     port: 587,
     domain: "gmail.com",
     authentication: "plain",

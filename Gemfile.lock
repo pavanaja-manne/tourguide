@@ -28,6 +28,7 @@ GEM
     activesupport (3.2.2)
       i18n (~> 0.6)
       multi_json (~> 1.0)
+    addressable (2.3.6)
     arel (3.0.3)
     builder (3.0.4)
     coffee-rails (3.2.2)
@@ -37,6 +38,8 @@ GEM
       coffee-script-source
       execjs
     coffee-script-source (1.8.0)
+    css_parser (1.3.5)
+      addressable
     erubis (2.7.0)
     execjs (2.2.2)
     faraday (0.9.0)
@@ -45,6 +48,7 @@ GEM
       tilt
     hashie (3.3.1)
     hike (1.2.3)
+    htmlentities (4.3.2)
     i18n (0.6.11)
     journey (1.0.4)
     jquery-rails (3.1.2)
@@ -78,6 +82,12 @@ GEM
       omniauth (~> 1.2)
     pg (0.17.1)
     polyglot (0.3.5)
+    premailer (1.8.2)
+      css_parser (>= 1.3.5)
+      htmlentities (>= 4.0.0)
+    premailer-rails3 (1.3.2)
+      premailer (~> 1.7)
+      rails (>= 3)
     rack (1.4.5)
     rack-cache (1.2)
       rack (>= 0.4)
@@ -112,6 +122,7 @@ GEM
       hike (~> 1.2)
       rack (~> 1.0)
       tilt (~> 1.1, != 1.3.0)
+    sqlite3 (1.3.10)
     thor (0.14.6)
     tilt (1.4.1)
     treetop (1.4.15)
@@ -132,7 +143,9 @@ DEPENDENCIES
   omniauth
   omniauth-facebook
   pg
+  premailer-rails3
   rails (= 3.2.2)
   sass
   sass-rails (~> 3.2.3)
+  sqlite3
   uglifier (>= 1.0.3)

@@ -7,6 +7,7 @@ gem 'rails', '3.2.2'
 #gem 'pg'
 #gem 'activerecord-postgresql-adapter'
 #gem 'mysql'
+gem 'premailer-rails3'
 
 gem 'omniauth'
 gem 'omniauth-facebook'
@@ -32,7 +33,7 @@ gem 'jquery-rails'
 
 group :development, :test do
   #gem 'mysql2'
-  #gem 'sqlite3'
+  gem 'sqlite3'
 end
 group :production do
   gem 'pg'

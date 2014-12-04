@@ -38,11 +38,13 @@ TourGuide::Application.configure do
   config.action_mailer.smtp_settings = {
     address: "smtp.gmail.com",     
     port: 27,
-    domain: "gmail.com",
+    domain: "outlook.com",
     authentication: "plain",
-    enable_starttls_auto: true,
-    user_name: "raghava.sangars@gmail.com",
-    password: "nencheppanu"
+    #enable_starttls_auto: true,
+    #user_name: "raghava.sangars@gmail.com",
+    #password: "nencheppanu"\
+    user_name: "vineeth.m99@outlook.com",
+    password: ""
   }
 
   # Expands the lines which load the assets

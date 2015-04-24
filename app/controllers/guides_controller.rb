@@ -111,9 +111,6 @@ class GuidesController < ApplicationController
 
 
   def location_create_fsq
-    puts "********************8"
-    puts params.inspect
-    puts session[:user_id]
     @user = User.find_by_uid(session[:user_id])
     @l_exist = Location.where(:foursquare_id => params[:fsq_id], :user_id => @user.id)
     if(@l_exist.blank?)
